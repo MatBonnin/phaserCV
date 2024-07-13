@@ -12,12 +12,22 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('tiles', 'assets/tileset.png');
+    // this.load.image('tiles', 'assets/tileset.png');
+    this.load.spritesheet('tiles', 'assets/tileset.png', {
+      frameWidth: 16, // La largeur de chaque tuile dans votre spritesheet
+      frameHeight: 16, // La hauteur de chaque tuile dans votre spritesheet
+    });
     this.load.tilemapTiledJSON('map', 'assets/map.tmj');
     this.load.spritesheet('player', 'assets/player.png', {
       frameWidth: 16,
       frameHeight: 32,
     });
+
+    this.load.bitmapFont(
+      'minogram',
+      'fonts/minogram_6x10.png',
+      'fonts/minogram_6x10.xml'
+    );
   }
 
   create() {
@@ -33,20 +43,6 @@ export default class GameScene extends Phaser.Scene {
 
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
-
-    function scaleLayers(layers) {
-      layers.forEach((layer) => layer.setScale(1));
-    }
-
-    scaleLayers([
-      groundLayer,
-      obstacleLayer,
-      this.statueLayer,
-      habillageLayer,
-      this.roofLayer,
-      this.headStatueLayer,
-      doorLayer,
-    ]);
 
     obstacleLayer.setCollisionBetween(1, 2000);
     this.statueLayer.setCollisionBetween(1, 2000);
