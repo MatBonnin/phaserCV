@@ -68,6 +68,22 @@ export default class HouseScene extends Phaser.Scene {
       10
     );
 
+    const doorPosition = { x: 405, y: 500 }; // Coordonnées de la porte
+    this.door = this.physics.add.sprite(
+      doorPosition.x,
+      doorPosition.y,
+      'Inner',
+      241
+    );
+    this.door.body.setSize(16, 16); // Ajustez la taille de la zone de détection si nécessaire
+    this.physics.add.overlap(
+      this.player,
+      this.door,
+      this.exitHouse,
+      null,
+      this
+    );
+
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
     // Adjust camera bounds and center on the room
@@ -165,5 +181,9 @@ export default class HouseScene extends Phaser.Scene {
 
   openPDF() {
     window.open('/pdf/CV.pdf', '_blank');
+  }
+  exitHouse(player, door) {
+    // Change to the HouseScene when the player overlaps with the door
+    this.scene.start('scene-game');
   }
 }
