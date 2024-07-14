@@ -37,9 +37,11 @@ export default class HouseScene extends Phaser.Scene {
 
     const layers = createLayers(map, layersConfig);
 
-    this.player = new Player(this, 400, 400, 'player');
+    this.player = new Player(this, 400, 480, 'player');
+
     this.physics.add.collider(this.player.sprite, layers.Meubles);
     this.physics.add.collider(this.player.sprite, layers.Wall);
+    this.player.sprite.anims.play('up', true);
 
     const doorConfig = {
       x: 405,
@@ -48,7 +50,7 @@ export default class HouseScene extends Phaser.Scene {
       frame: 241,
       width: 16,
       height: 16,
-      callback: this.exitHouse,
+      callback: this.exitHouse.bind(this),
     };
     this.door = createSprite(this, doorConfig);
 
@@ -65,7 +67,7 @@ export default class HouseScene extends Phaser.Scene {
       frame: 373,
       width: 16,
       height: 16,
-      callback: this.handleOverlap,
+      callback: this.handleOverlap.bind(this),
     };
     this.livre = createSprite(this, bookConfig);
     this.livre.setImmovable(true);
@@ -108,7 +110,15 @@ export default class HouseScene extends Phaser.Scene {
     window.open('/pdf/CV.pdf', '_blank');
   }
 
-  exitHouse(player, door) {
+  exitHouse() {
+    // Récupérer la position du joueur stockée
+    let playerPosition = this.scene
+      .get('scene-game')
+      .data.get('playerPosition');
+    if (playerPosition) {
+      this.scene.get('scene-game').data.set('playerPosition', playerPosition);
+    }
+
     this.scene.start('scene-game');
   }
 }

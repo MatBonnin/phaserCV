@@ -15,10 +15,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    // this.load.image('tiles', 'assets/tileset.png');
     this.load.spritesheet('tiles', 'assets/tileset.png', {
-      frameWidth: 16, // La largeur de chaque tuile dans votre spritesheet
-      frameHeight: 16, // La hauteur de chaque tuile dans votre spritesheet
+      frameWidth: 16,
+      frameHeight: 16,
     });
     this.load.tilemapTiledJSON('map', 'assets/map.tmj');
     this.load.spritesheet('player', 'assets/player.png', {
@@ -52,11 +51,14 @@ export default class GameScene extends Phaser.Scene {
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
 
-    // Ne pas configurer de collisions pour doorLayer
+    // Récupérer la position du joueur stockée
+    const playerPosition = this.scene
+      .get('scene-game')
+      .data.get('playerPosition');
+    const startX = playerPosition ? playerPosition.x : 55;
+    const startY = playerPosition ? playerPosition.y : 100;
 
-    this.player = new Player(this, 100, 100, 'player');
-
-    // Ajuster la hitbox du personnage pour ne prendre en compte que la partie inférieure
+    this.player = new Player(this, startX, startY, 'player');
 
     this.physics.add.collider(this.player.sprite, this.layers.Maison);
     this.physics.add.collider(this.player.sprite, this.layers.Statue);
@@ -68,29 +70,24 @@ export default class GameScene extends Phaser.Scene {
       frame: 373,
       width: 16,
       height: 16,
-      callback: this.enterHouse,
+      callback: this.enterHouse.bind(this),
     };
     this.door = createSprite(this, doorConfig);
-    // Ajoutez ceci pour configurer la zone de détection pour la porte
 
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
 
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-
     this.cameras.main.centerOn(mapWidth / 3, mapHeight / 3);
     this.cameras.main.startFollow(this.player.sprite);
 
-    // Configurer la profondeur pour gérer les superpositions
     this.layers.ground.setDepth(0);
     this.layers.Maison.setDepth(1);
     this.layers.Statue.setDepth(2);
     this.layers.habillage.setDepth(3);
-
     this.layers.doors.setDepth(5);
     this.player.sprite.setDepth(6);
 
-    // Créer les animations
     const animationSettings = [
       { key: 'left', start: 52, end: 54 },
       { key: 'right', start: 18, end: 20 },
@@ -113,17 +110,14 @@ export default class GameScene extends Phaser.Scene {
   update() {
     this.player.update(this.cursors);
 
-    // Ajuster la profondeur du joueur en fonction de sa position Y
     this.player.sprite.setDepth(this.player.sprite.y);
 
-    // Ajuster la profondeur du toit pour gérer la superposition
     if (this.player.sprite.y < this.layers.toit.y) {
       this.layers.toit.setDepth(this.player.sprite.depth - 1);
     } else {
       this.layers.toit.setDepth(this.player.sprite.depth + 1);
     }
 
-    // Ajuster la profondeur de la tête de la statue pour gérer la superposition
     if (this.player.sprite.y < this.layers.headStatue.y) {
       this.layers.headStatue.setDepth(this.player.sprite.depth - 1);
     } else {
@@ -131,8 +125,12 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
-  enterHouse(player, door) {
-    // Change to the HouseScene when the player overlaps with the door
+  enterHouse() {
+    // Sauvegarder la position du joueur
+    const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
+    this.scene.get('scene-game').data.set('playerPosition', playerPosition);
+
+    // Changer de scène
     this.scene.start('house-scene');
   }
 }
