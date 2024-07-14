@@ -1,11 +1,14 @@
+import { createLayers, createSprite } from '../utils/utils';
+
 import Phaser from 'phaser';
+import Player from '../utils/player';
 
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-const speed = 500;
+const speed = 200;
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super('scene-game');
@@ -33,43 +36,42 @@ export default class GameScene extends Phaser.Scene {
   create() {
     const map = this.make.tilemap({ key: 'map' });
     const tiles = map.addTilesetImage('tileset', 'tiles');
-    const groundLayer = map.createLayer('ground', tiles, 0, 0);
-    const obstacleLayer = map.createLayer('Maison', tiles, 0, 0);
-    this.statueLayer = map.createLayer('Statue', tiles, 0, 0);
-    const habillageLayer = map.createLayer('habillage', tiles, 0, 0);
-    this.roofLayer = map.createLayer('toit', tiles, 0, 0); // Nouvelle couche pour le toit
-    const doorLayer = map.createLayer('doors', tiles, 0, 0); // Nouvelle couche pour les portes
-    this.headStatueLayer = map.createLayer('headStatue', tiles, 0, 0); // Nouvelle couche pour la tête de la statue
+
+    const layersConfig = [
+      { name: 'ground', tileset: tiles },
+      { name: 'Maison', tileset: tiles, collision: true },
+      { name: 'Statue', tileset: tiles, collision: true },
+      { name: 'habillage', tileset: tiles },
+      { name: 'toit', tileset: tiles },
+      { name: 'doors', tileset: tiles },
+      { name: 'headStatue', tileset: tiles, collision: true },
+    ];
+
+    this.layers = createLayers(map, layersConfig);
 
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
 
-    obstacleLayer.setCollisionBetween(1, 2000);
-    this.statueLayer.setCollisionBetween(1, 2000);
     // Ne pas configurer de collisions pour doorLayer
 
-    this.player = this.physics.add.sprite(100, 100, 'player');
-    this.player.setCollideWorldBounds(true);
-    this.player.setScale(1);
+    this.player = new Player(this, 100, 100, 'player');
 
     // Ajuster la hitbox du personnage pour ne prendre en compte que la partie inférieure
-    this.player.body.setSize(this.player.width / 1.2, this.player.height / 2);
-    this.player.body.setOffset(1.2, this.player.height / 2);
 
-    this.physics.add.collider(this.player, obstacleLayer);
-    this.physics.add.collider(this.player, this.statueLayer);
+    this.physics.add.collider(this.player.sprite, this.layers.Maison);
+    this.physics.add.collider(this.player.sprite, this.layers.Statue);
 
+    const doorConfig = {
+      x: 390,
+      y: 285,
+      texture: 'tiles',
+      frame: 373,
+      width: 16,
+      height: 16,
+      callback: this.enterHouse,
+    };
+    this.door = createSprite(this, doorConfig);
     // Ajoutez ceci pour configurer la zone de détection pour la porte
-    const doorPosition = { x: 390, y: 285 }; // Coordonnées de la porte
-    this.door = this.physics.add.sprite(doorPosition.x, doorPosition.y, null);
-    this.door.body.setSize(16, 16); // Ajustez la taille de la zone de détection si nécessaire
-    this.physics.add.overlap(
-      this.player,
-      this.door,
-      this.enterHouse,
-      null,
-      this
-    );
 
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
@@ -77,21 +79,16 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
 
     this.cameras.main.centerOn(mapWidth / 3, mapHeight / 3);
-    this.cameras.main.startFollow(this.player);
-
-    console.log(mapHeight);
-
-    //camera
+    this.cameras.main.startFollow(this.player.sprite);
 
     // Configurer la profondeur pour gérer les superpositions
-    groundLayer.setDepth(0);
-    obstacleLayer.setDepth(1);
-    this.statueLayer.setDepth(2);
-    habillageLayer.setDepth(3);
-    this.headStatueLayer.setDepth(4); // Profondeur de la tête de la statue
-    this.roofLayer.setDepth(5);
+    this.layers.ground.setDepth(0);
+    this.layers.Maison.setDepth(1);
+    this.layers.Statue.setDepth(2);
+    this.layers.habillage.setDepth(3);
 
-    this.player.setDepth(6);
+    this.layers.doors.setDepth(5);
+    this.player.sprite.setDepth(6);
 
     // Créer les animations
     const animationSettings = [
@@ -114,39 +111,23 @@ export default class GameScene extends Phaser.Scene {
   }
 
   update() {
-    this.player.body.setVelocity(0);
-
-    if (this.cursors.left.isDown) {
-      this.player.body.setVelocityX(-speed);
-      this.player.anims.play('left', true);
-    } else if (this.cursors.right.isDown) {
-      this.player.body.setVelocityX(speed);
-      this.player.anims.play('right', true);
-    } else if (this.cursors.up.isDown) {
-      this.player.body.setVelocityY(-speed);
-      this.player.anims.play('up', true);
-    } else if (this.cursors.down.isDown) {
-      this.player.body.setVelocityY(speed);
-      this.player.anims.play('down', true);
-    } else {
-      this.player.anims.stop();
-    }
+    this.player.update(this.cursors);
 
     // Ajuster la profondeur du joueur en fonction de sa position Y
-    this.player.setDepth(this.player.y);
+    this.player.sprite.setDepth(this.player.sprite.y);
 
     // Ajuster la profondeur du toit pour gérer la superposition
-    if (this.player.y < this.roofLayer.y) {
-      this.roofLayer.setDepth(this.player.depth - 1);
+    if (this.player.sprite.y < this.layers.toit.y) {
+      this.layers.toit.setDepth(this.player.sprite.depth - 1);
     } else {
-      this.roofLayer.setDepth(this.player.depth + 1);
+      this.layers.toit.setDepth(this.player.sprite.depth + 1);
     }
 
     // Ajuster la profondeur de la tête de la statue pour gérer la superposition
-    if (this.player.y < this.headStatueLayer.y) {
-      this.headStatueLayer.setDepth(this.player.depth - 1);
+    if (this.player.sprite.y < this.layers.headStatue.y) {
+      this.layers.headStatue.setDepth(this.player.sprite.depth - 1);
     } else {
-      this.headStatueLayer.setDepth(this.player.depth + 1);
+      this.layers.headStatue.setDepth(this.player.sprite.depth + 1);
     }
   }
 

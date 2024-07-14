@@ -1,4 +1,12 @@
+import {
+  createAnimations,
+  createLayers,
+  createSprite,
+  preloadAssets,
+} from '../utils/utils';
+
 import Phaser from 'phaser';
+import Player from '../utils/player';
 
 export default class HouseScene extends Phaser.Scene {
   constructor() {
@@ -6,24 +14,7 @@ export default class HouseScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('Inner', 'assets/Inner.png', {
-      frameWidth: 16, // La largeur de chaque tuile dans votre spritesheet
-      frameHeight: 16, // La hauteur de chaque tuile dans votre spritesheet
-    });
-
-    this.load.image('objects', '/assets/objects.png');
-    this.load.image('NPC_test', '/assets/NPC_test.png');
-    this.load.tilemapTiledJSON('houseMap', '/assets/houseMap.tmj');
-    this.load.spritesheet('player', '/assets/player.png', {
-      frameWidth: 16,
-      frameHeight: 32,
-    });
-
-    this.load.bitmapFont(
-      'minogram',
-      'fonts/minogram_6x10.png',
-      'fonts/minogram_6x10.xml'
-    );
+    preloadAssets(this);
   }
 
   create() {
@@ -32,35 +23,57 @@ export default class HouseScene extends Phaser.Scene {
     const objects = map.addTilesetImage('objects', 'objects');
     const NPC = map.addTilesetImage('NPC_test', 'NPC_test');
 
-    const exampleText = this.add
-      .text(370, 300, 'Bonjour', { fontSize: '12px', fill: '#000000' })
-      .setDepth(10);
+    const layersConfig = [
+      { name: 'Ground', tileset: tiles },
+      { name: 'shadow', tileset: tiles },
+      { name: 'tapis', tileset: tiles },
+      { name: 'Meubles', tileset: tiles, collision: true },
+      { name: 'décoration', tileset: tiles },
+      { name: 'Door', tileset: tiles },
+      { name: 'Wall', tileset: tiles, collision: true },
+      { name: 'chaise', tileset: tiles },
+      { name: 'npc', tileset: NPC },
+    ];
 
-    const groundLayer = map.createLayer('Ground', tiles, 0, 0);
-    const shadowLayer = map.createLayer('shadow', tiles, 0, 0);
-    const carpetLayer = map.createLayer('tapis', tiles, 0, 0);
-    const furnitureLayer = map.createLayer('Meubles', tiles, 0, 0);
-    const decorationLayer = map.createLayer('décoration', tiles, 0, 0);
-    const doorLayer = map.createLayer('Door', tiles, 0, 0);
-    const wallLayer = map.createLayer('Wall', tiles, 0, 0);
-    const chaiseLayer = map.createLayer('chaise', tiles, 0, 0);
+    const layers = createLayers(map, layersConfig);
 
-    const bulleLayout = map.createLayer('bulle', objects, 0, 0);
-    const NPCLayout = map.createLayer('npc', NPC, 0, 0);
+    this.player = new Player(this, 400, 400, 'player');
+    this.physics.add.collider(this.player.sprite, layers.Meubles);
+    this.physics.add.collider(this.player.sprite, layers.Wall);
 
-    this.player = this.physics.add.sprite(400, 400, 'player');
-    this.player.setCollideWorldBounds(true);
-    this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    const doorConfig = {
+      x: 405,
+      y: 500,
+      texture: 'Inner',
+      frame: 241,
+      width: 16,
+      height: 16,
+      callback: this.exitHouse,
+    };
+    this.door = createSprite(this, doorConfig);
 
-    this.player.body.setSize(this.player.width / 1.2, this.player.height / 2);
-    this.player.body.setOffset(1.2, this.player.height / 2);
+    const mapWidth = map.widthInPixels;
+    const mapHeight = map.heightInPixels;
+    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+    this.cameras.main.centerOn(mapWidth / 2, mapHeight / 2);
+    this.cameras.main.startFollow(this.player.sprite);
 
-    this.physics.add.collider(this.player, furnitureLayer);
-    this.physics.add.collider(this.player, wallLayer);
-    furnitureLayer.setCollisionBetween(1, 2000);
-    wallLayer.setCollisionBetween(1, 2000);
+    const bookConfig = {
+      x: 408,
+      y: 345,
+      texture: 'Inner',
+      frame: 373,
+      width: 16,
+      height: 16,
+      callback: this.handleOverlap,
+    };
+    this.livre = createSprite(this, bookConfig);
+    this.livre.setImmovable(true);
+    this.livre.setAngle(-90);
 
-    const text = this.add.bitmapText(
+    createAnimations(this);
+
+    this.add.bitmapText(
       325,
       240,
       'minogram',
@@ -68,109 +81,21 @@ export default class HouseScene extends Phaser.Scene {
       10
     );
 
-    const doorPosition = { x: 405, y: 500 }; // Coordonnées de la porte
-    this.door = this.physics.add.sprite(
-      doorPosition.x,
-      doorPosition.y,
-      'Inner',
-      241
-    );
-    this.door.body.setSize(16, 16); // Ajustez la taille de la zone de détection si nécessaire
-    this.physics.add.overlap(
-      this.player,
-      this.door,
-      this.exitHouse,
-      null,
-      this
-    );
-
-    const mapWidth = map.widthInPixels;
-    const mapHeight = map.heightInPixels;
-    // Adjust camera bounds and center on the room
-    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-    this.cameras.main.centerOn(mapWidth / 2, mapHeight / 2);
-    this.cameras.main.startFollow(this.player);
-
-    // Créer le livre en tant que sprite
-    this.livre = this.physics.add.sprite(408, 345, 'Inner', 373);
-    this.livre.setImmovable(true);
-    this.livre.setAngle(-90);
-    this.livre.body.setSize(16, 16);
-    this.livre.body.setOffset(0, 0);
-
-    this.physics.add.overlap(
-      this.player,
-      this.livre,
-      this.handleOverlap,
-      null,
-      this
-    );
-
-    this.anims.create({
-      key: 'left',
-      frames: this.anims.generateFrameNumbers('player', {
-        start: 52,
-        end: 54,
-      }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: 'right',
-      frames: this.anims.generateFrameNumbers('player', { start: 18, end: 20 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: 'up',
-      frames: this.anims.generateFrameNumbers('player', { start: 35, end: 37 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.anims.create({
-      key: 'down',
-      frames: this.anims.generateFrameNumbers('player', { start: 0, end: 2 }),
-      frameRate: 10,
-      repeat: -1,
-    });
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-    this.player.anims.play('up', true);
+    this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
   }
 
   update() {
-    this.player.body.setVelocity(0);
-
-    if (this.cursors.left.isDown) {
-      this.player.body.setVelocityX(-160);
-      this.player.anims.play('left', true);
-    } else if (this.cursors.right.isDown) {
-      this.player.body.setVelocityX(160);
-      this.player.anims.play('right', true);
-    } else if (this.cursors.up.isDown) {
-      this.player.body.setVelocityY(-160);
-      this.player.anims.play('up', true);
-    } else if (this.cursors.down.isDown) {
-      this.player.body.setVelocityY(160);
-      this.player.anims.play('down', true);
-    } else {
-      this.player.anims.stop();
-    }
-
+    this.player.update(this.cursors);
     if (
       Phaser.Geom.Intersects.RectangleToRectangle(
-        this.player.getBounds(),
+        this.player.sprite.getBounds(),
         this.livre.getBounds()
       ) &&
       this.keyE.isDown
     ) {
       this.openPDF();
     }
-
-    this.player.setDepth(this.player.y);
+    this.player.sprite.setDepth(this.player.sprite.y);
   }
 
   handleOverlap(player, livre) {
@@ -182,8 +107,8 @@ export default class HouseScene extends Phaser.Scene {
   openPDF() {
     window.open('/pdf/CV.pdf', '_blank');
   }
+
   exitHouse(player, door) {
-    // Change to the HouseScene when the player overlaps with the door
     this.scene.start('scene-game');
   }
 }
