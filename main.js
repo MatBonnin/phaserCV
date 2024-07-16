@@ -1,7 +1,9 @@
 import './style.css';
 
+import CaveScene from './scenes/CaveScene';
 import GameScene from './scenes/GameScene';
 import HouseScene from './scenes/HouseScene';
+import Level1Scene from './scenes/Level1Scene';
 import Phaser from 'phaser';
 
 const config = {
@@ -13,10 +15,10 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 0 },
-      debug: false,
+      debug: true,
     },
   },
-  scene: [GameScene, HouseScene],
+  scene: [GameScene, HouseScene, CaveScene, Level1Scene],
   scale: {
     zoom: 3, // Désactivez le redimensionnement automatique
   },

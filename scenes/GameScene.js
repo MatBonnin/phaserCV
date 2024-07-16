@@ -1,4 +1,9 @@
-import { createLayers, createSprite } from '../utils/utils';
+import {
+  createAnimations,
+  createLayers,
+  createSprite,
+  setGameCanvasMargins,
+} from '../utils/utils';
 
 import Phaser from 'phaser';
 import Player from '../utils/player';
@@ -19,17 +24,18 @@ export default class GameScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
-    this.load.tilemapTiledJSON('map', 'assets/map.tmj');
+    this.load.tilemapTiledJSON('map', 'assets/map/map.tmj');
     this.load.spritesheet('player', 'assets/player.png', {
       frameWidth: 16,
       frameHeight: 32,
     });
 
-    this.load.bitmapFont(
-      'minogram',
-      'fonts/minogram_6x10.png',
-      'fonts/minogram_6x10.xml'
-    );
+    this.load.spritesheet('playerAttack', 'assets/player.png', {
+      frameWidth: 32,
+      frameHeight: 32,
+    });
+
+    // this.load.audio('backgroundMusic', 'assets/sound/Mario.mp3');
   }
 
   create() {
@@ -56,7 +62,7 @@ export default class GameScene extends Phaser.Scene {
       .get('scene-game')
       .data.get('playerPosition');
     const startX = playerPosition ? playerPosition.x : 55;
-    const startY = playerPosition ? playerPosition.y : 100;
+    const startY = playerPosition ? playerPosition.y : 110;
 
     this.player = new Player(this, startX, startY, 'player');
 
@@ -74,6 +80,18 @@ export default class GameScene extends Phaser.Scene {
     };
     this.door = createSprite(this, doorConfig);
 
+    const doorCaveConfig = {
+      x: 55,
+      y: 90,
+      texture: 'tiles',
+      frame: 250,
+      width: 16,
+      height: 16,
+      callback: this.enterCave.bind(this),
+    };
+
+    this.doorCave = createSprite(this, doorCaveConfig);
+
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
 
@@ -88,23 +106,14 @@ export default class GameScene extends Phaser.Scene {
     this.layers.doors.setDepth(5);
     this.player.sprite.setDepth(6);
 
-    const animationSettings = [
-      { key: 'left', start: 52, end: 54 },
-      { key: 'right', start: 18, end: 20 },
-      { key: 'up', start: 35, end: 37 },
-      { key: 'down', start: 0, end: 2 },
-    ];
-
-    animationSettings.forEach(({ key, start, end }) => {
-      this.anims.create({
-        key,
-        frames: this.anims.generateFrameNumbers('player', { start, end }),
-        frameRate: 10,
-        repeat: -1,
-      });
-    });
+    createAnimations(this);
 
     this.cursors = this.input.keyboard.createCursorKeys();
+
+    setGameCanvasMargins('20%', '30%');
+
+    // this.backgroundMusic = this.sound.add('backgroundMusic');
+    // this.backgroundMusic.play({ loop: true, volume: 0.5 });
   }
 
   update() {
@@ -132,5 +141,13 @@ export default class GameScene extends Phaser.Scene {
 
     // Changer de scène
     this.scene.start('house-scene');
+  }
+  enterCave() {
+    // Sauvegarder la position du joueur
+    const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
+    this.scene.get('scene-game').data.set('playerPosition', playerPosition);
+
+    // Changer de scène
+    this.scene.start('scene-cave');
   }
 }
