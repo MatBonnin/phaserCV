@@ -13,71 +13,56 @@ class NPC {
     scene.physics.add.collider(this.sprite, scene.layers.Statue);
     scene.physics.add.collider(this.sprite, scene.player.sprite);
 
-    this.destination = { x, y };
-    this.speed = 50;
-    this.pauseDuration = 1000; // Durée de la pause en ms
+    this.moveDuration = 2000; // Durée pendant laquelle le PNJ se déplace dans une direction
+    this.lastMoveTime = 0; // Temps du dernier mouvement
 
-    this.chooseNewDestination();
+    // Initialiser le mouvement du PNJ
+    this.moveNPC();
   }
 
-  chooseNewDestination() {
-    // Choisir une nouvelle destination aléatoire dans une zone définie
-    const buffer = 50; // Évite de choisir une destination trop proche des bords de la carte
-    this.destination.x = Phaser.Math.Between(
-      buffer,
-      this.scene.physics.world.bounds.width - buffer
-    );
-    this.destination.y = Phaser.Math.Between(
-      buffer,
-      this.scene.physics.world.bounds.height - buffer
-    );
+  moveNPC() {
+    const directions = ['left', 'right', 'up', 'down'];
+    const direction = Phaser.Utils.Array.GetRandom(directions);
 
-    // Déplacer le PNJ vers la nouvelle destination
-    this.moveToDestination();
-  }
-
-  moveToDestination() {
-    const angle = Phaser.Math.Angle.Between(
-      this.sprite.x,
-      this.sprite.y,
-      this.destination.x,
-      this.destination.y
-    );
-    this.scene.physics.velocityFromRotation(
-      angle,
-      this.speed,
-      this.sprite.body.velocity
-    );
-
-    if (this.destination.x < this.sprite.x) {
-      this.sprite.anims.play('npc-walk-left', true);
-    } else if (this.destination.x > this.sprite.x) {
-      this.sprite.anims.play('npc-walk-right', true);
-    } else if (this.destination.y < this.sprite.y) {
-      this.sprite.anims.play('npc-walk-up', true);
-    } else if (this.destination.y > this.sprite.y) {
-      this.sprite.anims.play('npc-walk-down', true);
+    switch (direction) {
+      case 'left':
+        this.sprite.setVelocity(-50, 0);
+        this.sprite.anims.play('npc-walk-left', true);
+        break;
+      case 'right':
+        this.sprite.setVelocity(50, 0);
+        this.sprite.anims.play('npc-walk-right', true);
+        break;
+      case 'up':
+        this.sprite.setVelocity(0, -50);
+        this.sprite.anims.play('npc-walk-up', true);
+        break;
+      case 'down':
+        this.sprite.setVelocity(0, 50);
+        this.sprite.anims.play('npc-walk-down', true);
+        break;
     }
-  }
 
-  update() {
-    const distance = Phaser.Math.Distance.Between(
-      this.sprite.x,
-      this.sprite.y,
-      this.destination.x,
-      this.destination.y
-    );
-
-    if (distance < 5) {
-      // Arrêter le mouvement
-      this.sprite.body.velocity.set(0);
+    // Arrêter le mouvement après la durée définie
+    this.scene.time.delayedCall(this.moveDuration, () => {
+      this.sprite.setVelocity(0, 0);
       this.sprite.anims.stop();
+    });
+  }
 
-      // Choisir une nouvelle destination après une pause
-      this.scene.time.delayedCall(this.pauseDuration, () => {
-        this.chooseNewDestination();
-      });
+  update(time) {
+    if (time > this.lastMoveTime + this.moveDuration) {
+      this.moveNPC();
+      this.lastMoveTime = time;
     }
+
+    // Vérifier que le PNJ reste à l'intérieur des limites de la carte
+    if (this.sprite.x < 0) this.sprite.x = 0;
+    if (this.sprite.x > this.scene.physics.world.bounds.width)
+      this.sprite.x = this.scene.physics.world.bounds.width;
+    if (this.sprite.y < 0) this.sprite.y = 0;
+    if (this.sprite.y > this.scene.physics.world.bounds.height)
+      this.sprite.y = this.scene.physics.world.bounds.height;
   }
 }
 
