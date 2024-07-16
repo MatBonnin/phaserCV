@@ -16,26 +16,42 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('floorTiles', 'assets/atlas_floor-16x16.png', {
+    this.load.spritesheet(
+      'floorTiles',
+      'assets/spritesheet/atlas_floor-16x16.png',
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      }
+    );
+    this.load.spritesheet('objectTiles', 'assets/spritesheet/objects.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
-    this.load.spritesheet('objectTiles', 'assets/objects.png', {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-    this.load.spritesheet('wallsHigh', 'assets/atlas_walls_high-16x32.png', {
-      frameWidth: 16,
-      frameHeight: 32,
-    });
-    this.load.spritesheet('wallsLow', 'assets/atlas_walls_low-16x16.png', {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-    this.load.spritesheet('enemies', 'assets/0x72_DungeonTilesetII_v1.7.png', {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
+    this.load.spritesheet(
+      'wallsHigh',
+      'assets/spritesheet/atlas_walls_high-16x32.png',
+      {
+        frameWidth: 16,
+        frameHeight: 32,
+      }
+    );
+    this.load.spritesheet(
+      'wallsLow',
+      'assets/spritesheet/atlas_walls_low-16x16.png',
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      }
+    );
+    this.load.spritesheet(
+      'enemies',
+      'assets/spritesheet/0x72_DungeonTilesetII_v1.7.png',
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      }
+    );
     this.load.tilemapTiledJSON('level1Map', 'assets/map/level1.tmj');
     this.load.spritesheet('player', 'assets/player.png', {
       frameWidth: 16,
@@ -48,7 +64,8 @@ export default class Level1Scene extends Phaser.Scene {
     });
 
     // Charger le fichier audio si nécessaire
-    // this.load.audio('backgroundMusic', 'assets/audio/backgroundMusic.mp3');
+
+    this.load.audio('loseSound', 'assets/sound/Lose.mp3');
   }
 
   create() {
@@ -85,6 +102,8 @@ export default class Level1Scene extends Phaser.Scene {
     this.events.on('playerDied', this.onPlayerDeath, this);
     this.physics.add.collider(this.player.sprite, this.layers.mur);
     this.physics.add.collider(this.player.sprite, this.layers.decoration);
+    this.physics.add.collider(this.player.sprite, this.layers.murLow);
+
     this.player.sprite.anims.play('up', true);
 
     this.physics.world.bounds.width = mapWidth;
@@ -107,8 +126,8 @@ export default class Level1Scene extends Phaser.Scene {
 
     // generateEnemies(this, 10, 50, 50, 5, 'enemy-walk', 424, 432);
     // Jouer la musique de fond si nécessaire
-    // this.backgroundMusic = this.sound.add('backgroundMusic');
-    // this.backgroundMusic.play({ loop: true, volume: 0.5 });
+    this.backgroundMusic = this.sound.add('backgroundMusic');
+    this.backgroundMusic.play({ loop: true, volume: 0.5 });
 
     setGameCanvasMargins('40%', '35%');
 
@@ -127,6 +146,8 @@ export default class Level1Scene extends Phaser.Scene {
       })
       .setScrollFactor(0)
       .setDepth(5);
+
+    this.loseSound = this.sound.add('loseSound');
   }
 
   update() {
@@ -154,28 +175,11 @@ export default class Level1Scene extends Phaser.Scene {
       this.wave += 1;
       generateWaves(this.wave, this);
       this.physics.add.collider(this.enemies, this.layers.mur);
+      this.physics.add.collider(this.enemies, this.layers.murLow);
       this.physics.add.collider(this.enemies, this.enemies);
       this.waveText.setText(`Manche : ${this.wave}`);
     }
   }
-
-  // generateEnemies(count, minCoord, maxCoord) {
-  //   for (let i = 0; i < count; i++) {
-  //     const x = Phaser.Math.Between(minCoord, maxCoord);
-  //     const y = Phaser.Math.Between(minCoord, maxCoord);
-  //     const enemy = new Enemy(this, x, y, 'enemies', 424, {
-  //       health: 50,
-  //       speed: 50,
-  //       attackPower: 5,
-  //       animationKey: 'enemy-walk',
-  //       animationStart: 424,
-  //       animationEnd: 432,
-  //     });
-
-  //     enemy.setTarget(this.player);
-  //     this.enemies.add(enemy.sprite);
-  //   }
-  // }
 
   handlePlayerAttack() {
     // Vérifiez quels ennemis se trouvent dans le rayon d'attaque du joueur
@@ -209,13 +213,15 @@ export default class Level1Scene extends Phaser.Scene {
 
   onPlayerDeath() {
     // Afficher le message de mort
-    const deathText = this.add
+    this.add
       .text(170, 150, 'Vous êtes mort', {
         fontSize: '40px',
         fill: '#ff0000',
       })
       .setOrigin(0.5)
       .setDepth(10);
+
+    this.loseSound.play();
 
     // Attendre 5 secondes avant de relancer
     this.time.delayedCall(5000, () => {
@@ -224,6 +230,7 @@ export default class Level1Scene extends Phaser.Scene {
 
     // Pour éviter toute autre interaction ou mise à jour
     this.physics.pause();
-    this.input.keyboard.shutdown();
+
+    this.backgroundMusic.stop();
   }
 }

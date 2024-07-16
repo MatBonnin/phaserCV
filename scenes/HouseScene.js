@@ -1,8 +1,6 @@
 import {
-  createAnimations,
   createLayers,
   createSprite,
-  preloadAssets,
   setGameCanvasMargins,
 } from '../utils/utils';
 
@@ -15,13 +13,29 @@ export default class HouseScene extends Phaser.Scene {
   }
 
   preload() {
-    preloadAssets(this);
+    this.load.spritesheet('Inner', 'assets/spritesheet/Inner.png', {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+
+    this.load.image('objects', '/assets/spritesheet/objects.png');
+    this.load.image('NPC_test', '/assets/spritesheet/NPC_test.png');
+    this.load.tilemapTiledJSON('houseMap', '/assets/houseMap.tmj');
+    this.load.spritesheet('player', '/assets/player.png', {
+      frameWidth: 16,
+      frameHeight: 32,
+    });
+
+    this.load.bitmapFont(
+      'minogram',
+      'fonts/minogram_6x10.png',
+      'fonts/minogram_6x10.xml'
+    );
   }
 
   create() {
     const map = this.make.tilemap({ key: 'houseMap' });
     const tiles = map.addTilesetImage('Inner', 'Inner');
-    const objects = map.addTilesetImage('objects', 'objects');
     const NPC = map.addTilesetImage('NPC_test', 'NPC_test');
 
     const layersConfig = [
@@ -73,8 +87,7 @@ export default class HouseScene extends Phaser.Scene {
     this.livre = createSprite(this, bookConfig);
     this.livre.setImmovable(true);
     this.livre.setAngle(-90);
-
-    createAnimations(this);
+    this.cursors = this.input.keyboard.createCursorKeys();
 
     this.add.bitmapText(
       325,

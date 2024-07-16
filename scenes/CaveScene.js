@@ -13,7 +13,7 @@ export default class CaveScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('caveTiles', 'assets/cave.png', {
+    this.load.spritesheet('caveTiles', 'assets/spritesheet/cave.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
@@ -98,10 +98,6 @@ export default class CaveScene extends Phaser.Scene {
     this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
 
     this.cursors = this.input.keyboard.createCursorKeys();
-
-    // Jouer la musique de fond si nécessaire
-    // this.backgroundMusic = this.sound.add('backgroundMusic');
-    // this.backgroundMusic.play({ loop: true, volume: 0.5 });
 
     setGameCanvasMargins('45%', '35%');
   }

@@ -7,20 +7,15 @@ import {
 
 import Phaser from 'phaser';
 import Player from '../utils/player';
+import { waterfallAnimattion } from './animation';
 
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-const speed = 200;
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super('scene-game');
   }
 
   preload() {
-    this.load.spritesheet('tiles', 'assets/tileset.png', {
+    this.load.spritesheet('tiles', 'assets/spritesheet/tileset.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
@@ -35,7 +30,9 @@ export default class GameScene extends Phaser.Scene {
       frameHeight: 32,
     });
 
-    // this.load.audio('backgroundMusic', 'assets/sound/Mario.mp3');
+    this.load.audio('backgroundMusic', 'assets/sound/epique.mp3');
+    this.load.audio('accueilMusic', 'assets/sound/Monkey.mp3');
+    this.load.audio('loseSound', 'assets/sound/Lose.mp3');
   }
 
   create() {
@@ -73,7 +70,7 @@ export default class GameScene extends Phaser.Scene {
       x: 390,
       y: 285,
       texture: 'tiles',
-      frame: 373,
+      frame: 1322,
       width: 16,
       height: 16,
       callback: this.enterHouse.bind(this),
@@ -100,7 +97,7 @@ export default class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite);
 
     this.layers.ground.setDepth(0);
-    this.layers.Maison.setDepth(1);
+    this.layers.Maison.setDepth(0);
     this.layers.Statue.setDepth(2);
     this.layers.habillage.setDepth(3);
     this.layers.doors.setDepth(5);
@@ -112,8 +109,18 @@ export default class GameScene extends Phaser.Scene {
 
     setGameCanvasMargins('20%', '30%');
 
-    // this.backgroundMusic = this.sound.add('backgroundMusic');
-    // this.backgroundMusic.play({ loop: true, volume: 0.5 });
+    this.acccueilMusic = this.sound.add('accueilMusic');
+    this.acccueilMusic.play({ loop: true, volume: 0.5 });
+
+    waterfallAnimattion(this);
+
+    this.healthText = this.add
+      .text(35, 65, `Game`, {
+        fontSize: '16px',
+        fill: '#ffffff',
+      })
+      .setScrollFactor(0)
+      .setDepth(5);
   }
 
   update() {
@@ -138,7 +145,7 @@ export default class GameScene extends Phaser.Scene {
     // Sauvegarder la position du joueur
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
     this.scene.get('scene-game').data.set('playerPosition', playerPosition);
-
+    this.acccueilMusic.stop();
     // Changer de scène
     this.scene.start('house-scene');
   }
@@ -146,7 +153,7 @@ export default class GameScene extends Phaser.Scene {
     // Sauvegarder la position du joueur
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
     this.scene.get('scene-game').data.set('playerPosition', playerPosition);
-
+    this.acccueilMusic.stop();
     // Changer de scène
     this.scene.start('scene-cave');
   }
