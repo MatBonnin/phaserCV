@@ -6,9 +6,8 @@ import {
   setGameCanvasMargins,
 } from '../utils/utils';
 
-import Enemy from '../utils/Enemy';
 import Phaser from 'phaser';
-import Player from '../utils/player';
+import Player from '../utils/Characters/player';
 
 export default class Level1Scene extends Phaser.Scene {
   constructor() {

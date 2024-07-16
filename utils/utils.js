@@ -1,4 +1,4 @@
-import Enemy from './Enemy';
+import Enemy from './Characters/Enemy';
 
 export function createLayers(map, layersConfig) {
   const layers = {};

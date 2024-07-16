@@ -5,9 +5,11 @@ import {
   setGameCanvasMargins,
 } from '../utils/utils';
 
+import NPC from '../utils/Characters/NPC';
 import Phaser from 'phaser';
-import Player from '../utils/player';
-import { waterfallAnimattion } from './animation';
+import Player from '../utils/Characters/player';
+import { createNPCAnimations } from '../utils/animation/NPCAnimations';
+import { waterfallAnimattion } from '../utils/animation/waterfallAnimation';
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -27,6 +29,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.load.spritesheet('playerAttack', 'assets/player.png', {
       frameWidth: 32,
+      frameHeight: 32,
+    });
+
+    this.load.spritesheet('npc', 'assets/spritesheet/NPC_test.png', {
+      frameWidth: 16,
       frameHeight: 32,
     });
 
@@ -121,9 +128,15 @@ export default class GameScene extends Phaser.Scene {
       })
       .setScrollFactor(0)
       .setDepth(5);
+
+    // Créer les animations du PNJ
+    createNPCAnimations(this);
+
+    // Créer le PNJ
+    this.npc = new NPC(this, 400, 200, 'npc');
   }
 
-  update() {
+  update(time, delta) {
     this.player.update(this.cursors);
 
     this.player.sprite.setDepth(this.player.sprite.y);
@@ -139,6 +152,9 @@ export default class GameScene extends Phaser.Scene {
     } else {
       this.layers.headStatue.setDepth(this.player.sprite.depth + 1);
     }
+
+    // Mettre à jour le mouvement du PNJ
+    this.npc.update(time);
   }
 
   enterHouse() {
@@ -149,6 +165,7 @@ export default class GameScene extends Phaser.Scene {
     // Changer de scène
     this.scene.start('house-scene');
   }
+
   enterCave() {
     // Sauvegarder la position du joueur
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };

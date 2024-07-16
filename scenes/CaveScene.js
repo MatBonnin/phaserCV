@@ -5,7 +5,7 @@ import {
 } from '../utils/utils';
 
 import Phaser from 'phaser';
-import Player from '../utils/player';
+import Player from '../utils/Characters/player';
 
 export default class CaveScene extends Phaser.Scene {
   constructor() {
