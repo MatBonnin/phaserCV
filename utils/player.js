@@ -5,84 +5,95 @@ export default class Player {
     this.scene = scene;
     this.sprite = scene.physics.add.sprite(x, y, texture);
     this.sprite.setCollideWorldBounds(true);
-    this.sprite.body.setSize(this.sprite.width / 1.2, this.sprite.height / 2.5);
+    this.sprite.body.setSize(this.sprite.width / 1.2, this.sprite.height / 2);
     this.sprite.body.setOffset(1.2, this.sprite.height / 3);
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.attackKey = scene.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.F
     );
     this.direction = 'right';
-    this.isAttacking = false;
-    this.lastAttackTime = 0;
-    this.attackCooldown = 500; // cooldown in ms
-
-    this.sprite.on('animationcomplete', (animation, frame) => {
-      if (animation.key.startsWith('attack-')) {
-        this.isAttacking = false;
-        // this.sprite.setSize(this.sprite.width / 1.2, this.sprite.height / 2);
-        // this.sprite.setOffset(1.2, this.sprite.height / 3);
-      }
+    this.attacking = false;
+    this.attackPower = 10; // Puissance de l'attaque du joueur
+    this.health = 100;
+    this.attackKey.on('down', () => {
+      this.attacking = true;
+      this.scene.time.delayedCall(300, () => {
+        this.attacking = false;
+      });
     });
   }
 
-  update() {
-    const currentTime = this.scene.time.now;
+  update(cursors) {
+    this.sprite.body.setVelocity(0);
 
-    if (
-      this.attackKey.isDown &&
-      !this.isAttacking &&
-      currentTime - this.lastAttackTime > this.attackCooldown
-    ) {
-      this.isAttacking = true;
-      this.lastAttackTime = currentTime;
-      this.sprite.anims.play(`attack-${this.direction}`, true);
-    }
-
-    if (!this.isAttacking) {
-      this.sprite.body.setVelocity(0);
-
-      if (this.cursors.left.isDown) {
+    if (this.attacking) {
+      switch (this.direction) {
+        case 'left':
+          this.sprite.anims.play('attack-left', true);
+          break;
+        case 'right':
+          this.sprite.anims.play('attack-right', true);
+          break;
+        case 'up':
+          this.sprite.anims.play('attack-up', true);
+          break;
+        case 'down':
+          this.sprite.anims.play('attack-down', true);
+          break;
+      }
+    } else {
+      if (cursors.left.isDown) {
         this.sprite.body.setVelocityX(-160);
         this.sprite.anims.play('left', true);
         this.direction = 'left';
-      } else if (this.cursors.right.isDown) {
+      } else if (cursors.right.isDown) {
         this.sprite.body.setVelocityX(160);
         this.sprite.anims.play('right', true);
         this.direction = 'right';
-      } else if (this.cursors.up.isDown) {
+      } else if (cursors.up.isDown) {
         this.sprite.body.setVelocityY(-160);
         this.sprite.anims.play('up', true);
         this.direction = 'up';
-      } else if (this.cursors.down.isDown) {
+      } else if (cursors.down.isDown) {
         this.sprite.body.setVelocityY(160);
         this.sprite.anims.play('down', true);
         this.direction = 'down';
       } else {
         this.sprite.anims.stop();
       }
-    } else {
-      // Permettre le mouvement pendant l'attaque sans forcer l'animation de déplacement
-      if (this.cursors.left.isDown) {
-        this.sprite.body.setVelocityX(-160);
-      } else if (this.cursors.right.isDown) {
-        this.sprite.body.setVelocityX(160);
-      } else if (this.cursors.up.isDown) {
-        this.sprite.body.setVelocityY(-160);
-      } else if (this.cursors.down.isDown) {
-        this.sprite.body.setVelocityY(160);
-      }
     }
   }
 
-  setDepth(value) {
-    this.sprite.setDepth(value);
+  setHealth(value) {
+    if (value > 100) {
+      this.health = 100;
+      return;
+    } else if (this.health <= 0) {
+      console.log('mort');
+      this.health = 0;
+      this.scene.events.emit('playerDied');
+    } else {
+      this.health = value;
+    }
   }
 
-  setCollideWorldBounds(value) {
-    this.sprite.setCollideWorldBounds(value);
+  collectHeart(playerSprite, heart) {
+    if (heart.getData('type') === 'heart') {
+      this.setHealth(this.getHealth() + heart.getData('healAmount'));
+      heart.destroy();
+      console.log('Cœur collecté ! Vie régénérée.');
+    }
   }
 
-  body() {
-    return this.sprite.body;
+  getHealth() {
+    return this.health;
+  }
+
+  isAttacking() {
+    return this.attacking;
+  }
+
+  getAttackPower() {
+    return this.attackPower;
   }
 }

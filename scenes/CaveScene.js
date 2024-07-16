@@ -7,13 +7,6 @@ import {
 import Phaser from 'phaser';
 import Player from '../utils/player';
 
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
-
-const speed = 200;
-
 export default class CaveScene extends Phaser.Scene {
   constructor() {
     super('scene-cave');
@@ -81,11 +74,11 @@ export default class CaveScene extends Phaser.Scene {
 
     const holeConfig = {
       x: 120, // Coordonnées de la sortie, ajustez-les selon votre carte
-      y: 100,
+      y: 10,
       texture: 'caveTiles',
       frame: 373,
-      width: 10,
-      height: 10,
+      width: 50,
+      height: 50,
       callback: this.enterHole.bind(this),
     };
     this.exit = createSprite(this, holeConfig);

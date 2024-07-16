@@ -1,6 +1,8 @@
 import {
   createLayers,
   createSprite,
+  generateEnemies,
+  generateWaves,
   setGameCanvasMargins,
 } from '../utils/utils';
 
@@ -15,6 +17,10 @@ export default class Level1Scene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('floorTiles', 'assets/atlas_floor-16x16.png', {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+    this.load.spritesheet('objectTiles', 'assets/objects.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
@@ -46,6 +52,7 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   create() {
+    this.wave = 0;
     const map = this.make.tilemap({ key: 'level1Map' });
     const floorTiles = map.addTilesetImage('atlas_floor-16x16', 'floorTiles');
     const wallsHigh = map.addTilesetImage(
@@ -75,7 +82,7 @@ export default class Level1Scene extends Phaser.Scene {
     const startY = playerPosition ? playerPosition.y : 270;
 
     this.player = new Player(this, startX, startY, 'player');
-
+    this.events.on('playerDied', this.onPlayerDeath, this);
     this.physics.add.collider(this.player.sprite, this.layers.mur);
     this.physics.add.collider(this.player.sprite, this.layers.decoration);
     this.player.sprite.anims.play('up', true);
@@ -96,58 +103,99 @@ export default class Level1Scene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     // Créer des ennemis
-    this.enemies = this.add.group();
+    this.enemies = this.physics.add.group();
 
-    const enemy1 = new Enemy(this, 200, 200, 'enemies', 424, {
-      health: 50,
-      speed: 50,
-      attackPower: 5,
-      animationKey: 'enemy1-walk',
-      animationStart: 424,
-      animationEnd: 431,
-    });
-
-    enemy1.setTarget(this.player);
-
-    this.enemies.add(enemy1.sprite);
-    this.enemyInstances = [enemy1];
-
-    // Ajouter des collisions entre les ennemis et les murs
-    this.physics.add.collider(this.enemies, this.layers.mur);
-    this.physics.add.collider(this.enemies, this.layers.murLow);
-
-    // Ajouter des collisions entre les attaques du joueur et les ennemis
-    this.physics.add.overlap(
-      this.player.sprite,
-      this.enemies,
-      this.handlePlayerAttack,
-      null,
-      this
-    );
-
+    // generateEnemies(this, 10, 50, 50, 5, 'enemy-walk', 424, 432);
     // Jouer la musique de fond si nécessaire
     // this.backgroundMusic = this.sound.add('backgroundMusic');
     // this.backgroundMusic.play({ loop: true, volume: 0.5 });
 
     setGameCanvasMargins('40%', '35%');
+
+    this.healthText = this.add
+      .text(0, 0, `Santé: ${this.player.getHealth()}`, {
+        fontSize: '20px',
+        fill: '#ffffff',
+      })
+      .setScrollFactor(0)
+      .setDepth(5);
+
+    this.waveText = this.add
+      .text(190, 0, `Manche : ${this.wave}`, {
+        fontSize: '20px',
+        fill: '#ffffff',
+      })
+      .setScrollFactor(0)
+      .setDepth(5);
   }
 
   update() {
     this.player.update(this.cursors);
 
-    this.enemyInstances.forEach((enemy) => {
-      enemy.update();
+    this.enemies.children.iterate((enemy) => {
+      enemy.getData('ref').update();
     });
 
     // Garder la profondeur fixe
     this.player.sprite.setDepth(3);
+
+    // Gérer l'attaque du joueur
+    if (this.player.isAttacking() && !this.attackHandled) {
+      this.handlePlayerAttack();
+      this.attackHandled = true;
+      this.time.delayedCall(300, () => {
+        this.attackHandled = false;
+      });
+    }
+
+    this.healthText.setText(`Santé: ${this.player.getHealth()}`);
+
+    if (this.enemies.getLength() === 0) {
+      this.wave += 1;
+      generateWaves(this.wave, this);
+      this.physics.add.collider(this.enemies, this.layers.mur);
+      this.physics.add.collider(this.enemies, this.enemies);
+      this.waveText.setText(`Manche : ${this.wave}`);
+    }
   }
 
-  handlePlayerAttack(player, enemy) {
-    const enemyInstance = this.enemyInstances.find((e) => e.sprite === enemy);
-    if (enemyInstance && this.player.isAttacking()) {
-      enemyInstance.takeDamage(this.player.getAttackPower());
-    }
+  // generateEnemies(count, minCoord, maxCoord) {
+  //   for (let i = 0; i < count; i++) {
+  //     const x = Phaser.Math.Between(minCoord, maxCoord);
+  //     const y = Phaser.Math.Between(minCoord, maxCoord);
+  //     const enemy = new Enemy(this, x, y, 'enemies', 424, {
+  //       health: 50,
+  //       speed: 50,
+  //       attackPower: 5,
+  //       animationKey: 'enemy-walk',
+  //       animationStart: 424,
+  //       animationEnd: 432,
+  //     });
+
+  //     enemy.setTarget(this.player);
+  //     this.enemies.add(enemy.sprite);
+  //   }
+  // }
+
+  handlePlayerAttack() {
+    // Vérifiez quels ennemis se trouvent dans le rayon d'attaque du joueur
+    this.enemies.children.iterate((enemy) => {
+      console.log(enemy);
+      if (enemy) {
+        const distance = Phaser.Math.Distance.Between(
+          this.player.sprite.x,
+          this.player.sprite.y,
+          enemy.x,
+          enemy.y
+        );
+
+        if (distance < 20) {
+          // Ajustez ce rayon d'attaque selon vos besoins
+          const attackPower = this.player.getAttackPower();
+          enemy.getData('ref').takeDamage(attackPower);
+        }
+      }
+    });
   }
 
   exitLevel() {
@@ -157,5 +205,25 @@ export default class Level1Scene extends Phaser.Scene {
 
     // Changer de scène, par exemple retour à GameScene
     this.scene.start('scene-game');
+  }
+
+  onPlayerDeath() {
+    // Afficher le message de mort
+    const deathText = this.add
+      .text(170, 150, 'Vous êtes mort', {
+        fontSize: '40px',
+        fill: '#ff0000',
+      })
+      .setOrigin(0.5)
+      .setDepth(10);
+
+    // Attendre 5 secondes avant de relancer
+    this.time.delayedCall(5000, () => {
+      this.scene.start('scene-game');
+    });
+
+    // Pour éviter toute autre interaction ou mise à jour
+    this.physics.pause();
+    this.input.keyboard.shutdown();
   }
 }
