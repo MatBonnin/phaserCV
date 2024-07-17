@@ -26,6 +26,8 @@ export default class HouseScene extends Phaser.Scene {
       frameHeight: 32,
     });
 
+    this.load.image('parchemin', 'assets/images/parchemin.png');
+
     this.load.bitmapFont(
       'minogram',
       'fonts/minogram_6x10.png',
@@ -89,6 +91,16 @@ export default class HouseScene extends Phaser.Scene {
     this.livre.setAngle(-90);
     this.cursors = this.input.keyboard.createCursorKeys();
 
+    const parchmentConfig = {
+      x: 430, // Position x du parchemin
+      y: 439, // Position y du parchemin
+      texture: 'Inner',
+      frame: 1322, // Assurez-vous que le frame correspond à votre image de parchemin
+    };
+    this.parchemin = createSprite(this, parchmentConfig);
+    this.parchemin.setInteractive();
+    this.parchemin.setDepth(1);
+
     this.add.bitmapText(
       325,
       240,
@@ -113,6 +125,21 @@ export default class HouseScene extends Phaser.Scene {
     ) {
       this.openPDF();
     }
+
+    this.input.keyboard.on(
+      'keydown-E',
+      () => {
+        if (
+          Phaser.Geom.Intersects.RectangleToRectangle(
+            this.player.sprite.getBounds(),
+            this.parchemin.getBounds()
+          )
+        ) {
+          this.showParchmentImage();
+        }
+      },
+      this
+    );
     this.player.sprite.setDepth(this.player.sprite.y);
   }
 
@@ -120,6 +147,20 @@ export default class HouseScene extends Phaser.Scene {
     if (this.keyE.isDown) {
       this.openPDF();
     }
+  }
+
+  showParchmentImage() {
+    this.parchmentImage = this.add
+      .image(this.cameras.main.centerX, this.cameras.main.centerY, 'parchemin')
+      .setDepth(100);
+
+    this.parchmentImage.setDisplaySize(300, 200); // Ajustez la taille selon vos besoins
+    this.input.keyboard.on('keydown', this.hideParchmentImage, this);
+  }
+
+  hideParchmentImage() {
+    this.parchmentImage.destroy();
+    this.input.keyboard.off('keydown', this.hideParchmentImage, this);
   }
 
   openPDF() {

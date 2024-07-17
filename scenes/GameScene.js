@@ -78,8 +78,8 @@ export default class GameScene extends Phaser.Scene {
       .get('scene-game')
       .data.get('playerPosition');
 
-    const startX = playerPosition ? playerPosition.x : 55;
-    const startY = playerPosition ? playerPosition.y : 110;
+    const startX = playerPosition ? playerPosition.x : 400;
+    const startY = playerPosition ? playerPosition.y : 300;
 
     this.player = new Player(this, startX, startY, 'player');
 
@@ -136,6 +136,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.add
       .bitmapText(45, 65, 'minogram', `Game`, 10)
+      .setScrollFactor(0)
+      .setDepth(5);
+
+    this.add
+      .bitmapText(378, 240, 'minogram', `Infos`, 10)
       .setScrollFactor(0)
       .setDepth(5);
 
