@@ -46,6 +46,12 @@ export default class GameScene extends Phaser.Scene {
       frameHeight: 16,
     });
 
+    this.load.bitmapFont(
+      'minogram',
+      'fonts/minogram_6x10.png',
+      'fonts/minogram_6x10.xml'
+    );
+
     this.load.audio('backgroundMusic', 'assets/sound/epique.mp3');
     this.load.audio('accueilMusic', 'assets/sound/Monkey.mp3');
     this.load.audio('loseSound', 'assets/sound/Lose.mp3');
@@ -128,11 +134,8 @@ export default class GameScene extends Phaser.Scene {
 
     waterfallAnimattion(this);
 
-    this.healthText = this.add
-      .text(35, 65, `Game`, {
-        fontSize: '16px',
-        fill: '#ffffff',
-      })
+    this.add
+      .bitmapText(45, 65, 'minogram', `Game`, 10)
       .setScrollFactor(0)
       .setDepth(5);
 
@@ -149,8 +152,8 @@ export default class GameScene extends Phaser.Scene {
       { x: 430, y: 300 },
     ];
 
-    piecePositions.forEach((pos) => {
-      const piece = new Piece(this, pos.x, pos.y, 'pieces');
+    piecePositions.forEach((pos, index) => {
+      const piece = new Piece(this, pos.x, pos.y, 'pieces', 'piece' + index);
       this.pieces.add(piece.sprite);
     });
 
@@ -164,11 +167,11 @@ export default class GameScene extends Phaser.Scene {
 
     // Récupérer le nombre de pièces collectées depuis les données de la scène
     this.piecesCollected =
-      this.scene.get('scene-game').data.get('piecesCollected') || 0;
+      this.scene.get('scene-game').data.get('piecesCollected') || [];
     this.updateCanInteractWithStatue();
 
-    this.pieces.children.entries.forEach((piece) => {
-      if (this.piecesCollected >= 3) {
+    this.pieces.children.entries.forEach((piece, index) => {
+      if (this.piecesCollected[index] === piece.name) {
         piece.disableBody(true, true);
       }
     });
@@ -183,7 +186,7 @@ export default class GameScene extends Phaser.Scene {
 
   collectPiece(player, piece) {
     piece.disableBody(true, true);
-    this.piecesCollected += 1;
+    this.piecesCollected.push(piece.name);
     this.scene
       .get('scene-game')
       .data.set('piecesCollected', this.piecesCollected); // Enregistrer le nombre de pièces collectées
@@ -191,7 +194,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   updateCanInteractWithStatue() {
-    this.canInteractWithStatue = this.piecesCollected >= 3;
+    this.canInteractWithStatue = this.piecesCollected.length >= 3;
   }
 
   update(time, delta) {
