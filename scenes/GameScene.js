@@ -78,8 +78,8 @@ export default class GameScene extends Phaser.Scene {
       .get('scene-game')
       .data.get('playerPosition');
 
-    const startX = playerPosition ? playerPosition.x : 400;
-    const startY = playerPosition ? playerPosition.y : 300;
+    const startX = playerPosition ? playerPosition.x : 100;
+    const startY = playerPosition ? playerPosition.y : 100;
 
     this.player = new Player(this, startX, startY, 'player');
 

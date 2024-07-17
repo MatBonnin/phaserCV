@@ -147,6 +147,24 @@ export default class Level1Scene extends Phaser.Scene {
       .setDepth(5);
 
     this.loseSound = this.sound.add('loseSound');
+
+    const temporaryText = this.add
+      .text(
+        20,
+        200,
+        'Bienvenue dans le jeu !\n Appuyer sur F pour attaquer.\n Bonne chance !!',
+        {
+          fontSize: '18px',
+          fill: '#ffffff',
+        }
+      )
+      .setScrollFactor(0)
+      .setDepth(5);
+
+    // Faire disparaître le texte après 5 secondes
+    this.time.delayedCall(5000, () => {
+      temporaryText.destroy();
+    });
   }
 
   update() {
