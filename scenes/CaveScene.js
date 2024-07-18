@@ -43,7 +43,7 @@ export default class CaveScene extends Phaser.Scene {
     this.layers = createLayers(map, layersConfig);
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
-    this.scale.resize(mapWidth, mapHeight);
+    this.scale.resize(mapWidth, 600);
 
     // Récupérer la position du joueur stockée
     const playerPosition = this.scene

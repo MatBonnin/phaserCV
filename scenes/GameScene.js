@@ -68,7 +68,7 @@ export default class GameScene extends Phaser.Scene {
 
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
-    this.scale.resize(mapWidth, mapHeight);
+    this.scale.resize(900, 900);
 
     const playerPosition = this.scene
       .get('scene-game')
