@@ -50,15 +50,15 @@ export default class HouseScene extends Phaser.Scene {
 
     const layers = createLayers(map, layersConfig);
 
-    this.player = new Player(this, 400, 480, 'player');
+    this.player = new Player(this, 200, 200, 'player');
 
     this.physics.add.collider(this.player.sprite, layers.Meubles);
     this.physics.add.collider(this.player.sprite, layers.Wall);
     this.player.sprite.anims.play('up', true);
 
     const doorConfig = {
-      x: 405,
-      y: 500,
+      x: 174,
+      y: 248,
       texture: 'Inner',
       frame: 241,
       width: 16,
@@ -70,12 +70,12 @@ export default class HouseScene extends Phaser.Scene {
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
     this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-    this.cameras.main.centerOn(mapWidth / 2, mapHeight / 2);
+    this.cameras.main.centerOn(mapWidth, mapHeight);
     this.cameras.main.startFollow(this.player.sprite);
 
     const bookConfig = {
-      x: 408,
-      y: 345,
+      x: 184,
+      y: 105,
       texture: 'Inner',
       frame: 373,
       width: 16,
@@ -88,8 +88,8 @@ export default class HouseScene extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     const parchmentConfig = {
-      x: 430, // Position x du parchemin
-      y: 439, // Position y du parchemin
+      x: 250, // Position x du parchemin
+      y: 250, // Position y du parchemin
       texture: 'Inner',
       frame: 1322, // Assurez-vous que le frame correspond à votre image de parchemin
     };
@@ -106,6 +106,8 @@ export default class HouseScene extends Phaser.Scene {
     );
 
     this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    console.log(mapHeight);
+    this.scale.resize(mapWidth, mapHeight);
   }
 
   update() {

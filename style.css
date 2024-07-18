@@ -11,10 +11,10 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* height: 100vh; */
+  height: 100vh;
   margin: 0;
   overflow: hidden;
-  margin-top: 5%;
+
   /* background-image: url(./public/walllpaper.jpg); */
 }
 

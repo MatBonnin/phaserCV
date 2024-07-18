@@ -68,6 +68,7 @@ export default class GameScene extends Phaser.Scene {
 
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
+    this.scale.resize(mapWidth, mapHeight);
 
     const playerPosition = this.scene
       .get('scene-game')
@@ -107,9 +108,10 @@ export default class GameScene extends Phaser.Scene {
     this.physics.world.bounds.height = mapHeight;
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
 
-    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-    this.cameras.main.centerOn(mapWidth / 3, mapHeight / 3);
-    this.cameras.main.startFollow(this.player.sprite);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5);
+
+    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
+    this.cameras.main.setDeadzone(50, 50); // Plus petite pour voir l'effet
 
     this.layers.ground.setDepth(0);
     this.layers.Maison.setDepth(0);
@@ -129,12 +131,12 @@ export default class GameScene extends Phaser.Scene {
 
     this.add
       .bitmapText(45, 65, 'minogram', `Game`, 10)
-      .setScrollFactor(0)
+
       .setDepth(5);
 
     this.add
       .bitmapText(378, 240, 'minogram', `Infos`, 10)
-      .setScrollFactor(0)
+
       .setDepth(5);
 
     createNPCAnimations(this);

@@ -326,7 +326,7 @@
         {
          "columns":40,
          "firstgid":1,
-         "image":"..\/..\/..\/..\/tiledProjecct\/gfx\/Inner.png",
+         "image":"..\/..\/..\/..\/..\/tiledProjecct\/gfx\/Inner.png",
          "imageheight":400,
          "imagewidth":640,
          "margin":0,
@@ -339,7 +339,7 @@
         {
          "columns":4,
          "firstgid":1001,
-         "image":"..\/..\/..\/..\/tiledProjecct\/gfx\/NPC_test.png",
+         "image":"..\/..\/..\/..\/..\/tiledProjecct\/gfx\/NPC_test.png",
          "imageheight":128,
          "imagewidth":64,
          "margin":0,

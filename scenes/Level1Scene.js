@@ -85,9 +85,9 @@ export default class Level1Scene extends Phaser.Scene {
     ];
 
     this.layers = createLayers(map, layersConfig);
-
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
+    this.scale.resize(mapWidth, mapHeight);
 
     // Récupérer la position du joueur stockée
     const playerPosition = this.scene
@@ -107,9 +107,9 @@ export default class Level1Scene extends Phaser.Scene {
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
 
-    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
-    this.cameras.main.centerOn(mapWidth / 3, mapHeight / 3);
-    this.cameras.main.startFollow(this.player.sprite);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
+    this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
 
     this.layers.ground.setDepth(0);
     this.layers.mur.setDepth(1);
