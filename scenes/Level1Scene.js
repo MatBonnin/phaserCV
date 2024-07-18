@@ -106,7 +106,7 @@ export default class Level1Scene extends Phaser.Scene {
 
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
-
+    this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
     this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
     this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
     this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
@@ -128,28 +128,53 @@ export default class Level1Scene extends Phaser.Scene {
     this.backgroundMusic.play({ loop: true, volume: 0.5 });
 
     this.healthText = this.add
-      .text(0, 0, `Santé: ${this.player.getHealth()}`, {
-        fontSize: '20px',
-        fill: '#ffffff',
-      })
+      .text(
+        10,
+        this.cameras.main.displayHeight - 40,
+        `Santé: ${this.player.getHealth()}`,
+        {
+          fontSize: '20px',
+          fill: '#ffffff',
+          align: 'left',
+        }
+      )
       .setScrollFactor(0)
-      .setDepth(5);
+      .setDepth(5)
+      .setOrigin(0, 1); // setOrigin ajusté à (0, 1) pour l'ancrage en bas
 
     this.waveText = this.add
-      .text(190, 0, `Manche : ${this.wave}`, {
-        fontSize: '20px',
-        fill: '#ffffff',
-      })
+      .text(
+        190,
+        this.cameras.main.displayHeight - 40,
+        `Manche : ${this.wave}`,
+        {
+          fontSize: '20px',
+          fill: '#ffffff',
+          align: 'left',
+        }
+      )
       .setScrollFactor(0)
-      .setDepth(5);
+      .setDepth(5)
+      .setOrigin(0, 1); // setOrigin ajusté à (0, 1) pour l'ancrage en bas
+
+    // Écouteur de redimensionnement
+    this.scale.on('resize', (gameSize, baseSize, displaySize, resolution) => {
+      // Réajuster la position du texte en fonction de la nouvelle taille de la fenêtre
+      this.healthText.setY(gameSize.height - 40);
+      this.waveText.setY(gameSize.height - 40);
+    });
+
+    // Assurer que le texte est correctement positionné dès le début
+    this.healthText.setY(this.cameras.main.displayHeight - 40);
+    this.waveText.setY(this.cameras.main.displayHeight - 40);
 
     this.loseSound = this.sound.add('loseSound');
 
     const temporaryText = this.add
       .text(
         20,
-        200,
-        'Bienvenue dans le jeu !\n Appuyer sur F pour attaquer.\n Bonne chance !!',
+        60,
+        'Bienvenue dans le jeu !\nAppuyer sur F pour attaquer.\n     Bonne chance !!',
         {
           fontSize: '18px',
           fill: '#ffffff',

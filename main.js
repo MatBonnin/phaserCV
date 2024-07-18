@@ -28,6 +28,6 @@ const config = {
 const game = new Phaser.Game(config);
 
 // Ajouter un écouteur d'événement pour redimensionner le jeu lorsque la fenêtre est redimensionnée
-window.addEventListener('resize', (gameWidth, gameHeight) => {
-  game.scale.resize(gameWidth, gameHeight);
-});
+// window.addEventListener('resize', (gameWidth, gameHeight) => {
+//   game.scale.resize(gameWidth, gameHeight);
+// });
