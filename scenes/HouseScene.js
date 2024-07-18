@@ -95,15 +95,26 @@ export default class HouseScene extends Phaser.Scene {
     };
     this.parchemin = createSprite(this, parchmentConfig);
     this.parchemin.setInteractive();
-    this.parchemin.setDepth(1);
+    this.parchemin.setDepth(2);
 
     this.add.bitmapText(
-      325,
-      240,
+      90,
+      5,
       'minogram',
       'Le livre sur la table possede\nsurement des informations\nsur le propriétaire ! \n\n(appuie sur E pour le lire)',
       10
     );
+
+    this.parcheminText = this.add.bitmapText(
+      10,
+      10,
+      'minogram',
+      `Quand trois fragments anciens seront réunis,\n le gardien de pierre cédera à ta volonté.\n Trouve-les, approche,\n et active le mystère avec 'E'.`,
+      10
+    );
+    this.parcheminText.setVisible(false);
+    this.parcheminText.setDepth(11);
+    // this.parcheminText.tint(0x223344);
 
     this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     console.log(mapHeight);
@@ -136,7 +147,6 @@ export default class HouseScene extends Phaser.Scene {
       },
       this
     );
-    this.player.sprite.setDepth(this.player.sprite.y);
   }
 
   handleOverlap(player, livre) {
@@ -148,9 +158,9 @@ export default class HouseScene extends Phaser.Scene {
   showParchmentImage() {
     this.parchmentImage = this.add
       .image(this.cameras.main.centerX, this.cameras.main.centerY, 'parchemin')
-      .setDepth(100);
-
-    this.parchmentImage.setDisplaySize(300, 200); // Ajustez la taille selon vos besoins
+      .setDepth(10);
+    this.parcheminText.setVisible(true);
+    this.parchmentImage.setDisplaySize(200, 300); // Ajustez la taille selon vos besoins
     this.input.keyboard.on('keydown', this.hideParchmentImage, this);
   }
 
