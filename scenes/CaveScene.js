@@ -1,8 +1,4 @@
-import {
-  createLayers,
-  createSprite,
-  setGameCanvasMargins,
-} from '../utils/utils';
+import { createLayers, createSprite } from '../utils/utils';
 
 import Phaser from 'phaser';
 import Player from '../utils/Characters/player';
@@ -98,8 +94,6 @@ export default class CaveScene extends Phaser.Scene {
     this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
 
     this.cursors = this.input.keyboard.createCursorKeys();
-
-    setGameCanvasMargins('45%', '35%');
   }
 
   update() {

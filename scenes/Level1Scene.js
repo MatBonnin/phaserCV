@@ -3,7 +3,6 @@ import {
   createSprite,
   generateEnemies,
   generateWaves,
-  setGameCanvasMargins,
 } from '../utils/utils';
 
 import Phaser from 'phaser';
@@ -127,8 +126,6 @@ export default class Level1Scene extends Phaser.Scene {
     // Jouer la musique de fond si nécessaire
     this.backgroundMusic = this.sound.add('backgroundMusic');
     this.backgroundMusic.play({ loop: true, volume: 0.5 });
-
-    setGameCanvasMargins('40%', '35%');
 
     this.healthText = this.add
       .text(0, 0, `Santé: ${this.player.getHealth()}`, {

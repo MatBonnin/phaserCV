@@ -37,8 +37,8 @@ const { gameWidth, gameHeight } = calculateIdealSize(screenWidth, screenHeight);
 const config = {
   type: Phaser.WEBGL,
   parent: 'gameCanvas',
-  width: gameWidth,
-  height: gameHeight,
+  width: 480,
+  height: 320,
   physics: {
     default: 'arcade',
     arcade: {

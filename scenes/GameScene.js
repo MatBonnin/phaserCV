@@ -1,9 +1,4 @@
-import {
-  createAnimations,
-  createLayers,
-  createSprite,
-  setGameCanvasMargins,
-} from '../utils/utils';
+import { createAnimations, createLayers, createSprite } from '../utils/utils';
 
 import NPC from '../utils/Characters/NPC';
 import Phaser from 'phaser';
@@ -126,8 +121,6 @@ export default class GameScene extends Phaser.Scene {
     createPieceAnimation(this);
 
     this.cursors = this.input.keyboard.createCursorKeys();
-
-    setGameCanvasMargins('20%', '30%');
 
     this.acccueilMusic = this.sound.add('accueilMusic');
     this.acccueilMusic.play({ loop: true, volume: 0.5 });

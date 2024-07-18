@@ -1,8 +1,4 @@
-import {
-  createLayers,
-  createSprite,
-  setGameCanvasMargins,
-} from '../utils/utils';
+import { createLayers, createSprite } from '../utils/utils';
 
 import Phaser from 'phaser';
 import Player from '../utils/Characters/player';
@@ -110,8 +106,6 @@ export default class HouseScene extends Phaser.Scene {
     );
 
     this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-
-    setGameCanvasMargins('0%', '25%');
   }
 
   update() {

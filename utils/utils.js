@@ -113,15 +113,6 @@ export function createSprite(scene, spriteConfig) {
   return sprite;
 }
 
-export function setGameCanvasMargins(left, top) {
-  const gameCanvas = document.getElementById('gameCanvas');
-  const body = document.getElementById('body');
-  if (gameCanvas) {
-    gameCanvas.style.marginLeft = left;
-    // body.style.marginTop = top;
-  }
-}
-
 export function generateEnemies(
   scene,
   nbEnnemies,
