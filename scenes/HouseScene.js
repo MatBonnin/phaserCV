@@ -26,7 +26,6 @@ export default class HouseScene extends Phaser.Scene {
   update() {
     this.player.update(this.cursors);
     this.checkBookInteraction();
-    this.checkParchmentInteraction();
   }
 
   loadResources() {
@@ -115,13 +114,26 @@ export default class HouseScene extends Phaser.Scene {
       10
     );
 
-    this.parcheminText = this.add.bitmapText(
-      10,
-      10,
-      'minogram',
-      `Quand trois fragments anciens seront réunis,\n le gardien de pierre cédera à ta volonté.\n Trouve-les, approche,\n et active le mystère avec 'E'.`,
-      10
-    );
+    // this.parcheminText = this.add.bitmapText(
+    //   50,
+    //   50,
+    //   'minogram',
+    //   `Quand trois fragments anciens seront réunis,\n le gardien de pierre cédera à ta volonté.\n Trouve-les, approche,\n et active le mystère avec 'E'.`,
+    //   10
+    // );
+
+    this.parcheminText = this.add
+      .text(
+        165,
+        145,
+        `Quand trois\nfragments anciens\nseront réunis,\nle gardien\nde pierre cédera\nà ta volonté.\nTrouve-les,\napproche,\net active le\nmystère avec 'E'.`,
+        {
+          fontSize: '11px',
+          fill: '#000000',
+        }
+      )
+      .setOrigin(0.5)
+      .setDepth(10);
     this.parcheminText.setVisible(false);
     this.parcheminText.setDepth(11);
   }
@@ -141,14 +153,25 @@ export default class HouseScene extends Phaser.Scene {
     this.livre.setAngle(-90);
 
     const parchmentConfig = {
-      x: 250,
-      y: 250,
+      x: 215,
+      y: 195,
       texture: 'Inner',
-      frame: 1322,
+      frame: 370,
     };
     this.parchemin = createSprite(this, parchmentConfig);
     this.parchemin.setInteractive();
-    this.parchemin.setDepth(2);
+
+    this.keyE.on('down', () => {
+      if (
+        Phaser.Geom.Intersects.RectangleToRectangle(
+          this.player.sprite.getBounds(),
+          this.parchemin.getBounds()
+        ) &&
+        !this.parcheminText.visible
+      ) {
+        this.toggleParchmentDisplay(true); // Affiche le parchemin
+      }
+    });
   }
 
   checkBookInteraction() {
@@ -163,41 +186,41 @@ export default class HouseScene extends Phaser.Scene {
     }
   }
 
-  checkParchmentInteraction() {
-    this.input.keyboard.on(
-      'keydown-E',
-      () => {
-        if (
-          Phaser.Geom.Intersects.RectangleToRectangle(
-            this.player.sprite.getBounds(),
-            this.parchemin.getBounds()
-          )
-        ) {
-          this.showParchmentImage();
-        }
-      },
-      this
-    );
-  }
-
   handleOverlap(player, livre) {
     if (this.keyE.isDown) {
       this.openPDF();
     }
   }
 
-  showParchmentImage() {
-    this.parchmentImage = this.add
-      .image(this.cameras.main.centerX, this.cameras.main.centerY, 'parchemin')
-      .setDepth(10);
-    this.parcheminText.setVisible(true);
-    this.parchmentImage.setDisplaySize(200, 300);
-    this.input.keyboard.on('keydown', this.hideParchmentImage, this);
-  }
+  toggleParchmentDisplay(open) {
+    if (open) {
+      this.parchmentImage = this.add
+        .image(
+          this.cameras.main.centerX,
+          this.cameras.main.centerY,
+          'parchemin'
+        )
+        .setDepth(10);
+      this.parcheminText.setVisible(true);
+      this.parchmentImage.setDisplaySize(200, 200);
+      //after 2000ms
 
+      setTimeout(() => {
+        this.setUpKeyCloseParchemin();
+      }, '1000');
+    } else {
+      this.hideParchmentImage();
+    }
+  }
+  setUpKeyCloseParchemin() {
+    this.input.keyboard.once('keydown', this.hideParchmentImage, this);
+  }
   hideParchmentImage() {
-    this.parchmentImage.destroy();
-    this.input.keyboard.off('keydown', this.hideParchmentImage, this);
+    if (this.parchmentImage) {
+      this.parchmentImage.destroy();
+      this.parcheminText.setVisible(false);
+      this.input.keyboard.off('keydown', this.hideParchmentImage, this);
+    }
   }
 
   openPDF() {
