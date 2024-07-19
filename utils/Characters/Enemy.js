@@ -55,9 +55,6 @@ export default class Enemy {
     if (this.target) {
       this.target.setHealth((this.target.health -= this.attackPower));
       this.showDamageText(this.target.sprite, 'yellow', this.attackPower);
-      console.log(
-        `Attaque ! La santé du joueur est maintenant de ${this.target.health}`
-      );
     }
   }
 
@@ -110,7 +107,7 @@ export default class Enemy {
 
   die() {
     this.sprite.destroy();
-    console.log("L'ennemi est mort");
+
     this.stopAttacking(); // Arrêter le timer d'attaque
     this.dropHeart();
   }

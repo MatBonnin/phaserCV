@@ -9,11 +9,31 @@ export default class HouseScene extends Phaser.Scene {
   }
 
   preload() {
+    this.loadResources();
+  }
+
+  create() {
+    this.initializeVariables();
+    this.setupMap();
+    this.setupPlayer();
+    this.setupCollisions();
+    this.setupCamera();
+    this.setupDoors();
+    this.setupUI();
+    this.setupInteractiveElements();
+  }
+
+  update() {
+    this.player.update(this.cursors);
+    this.checkBookInteraction();
+    this.checkParchmentInteraction();
+  }
+
+  loadResources() {
     this.load.spritesheet('Inner', 'assets/spritesheet/Inner.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
-
     this.load.image('objects', '/assets/spritesheet/objects.png');
     this.load.image('NPC_test', '/assets/spritesheet/NPC_test.png');
     this.load.tilemapTiledJSON('houseMap', '/assets/houseMap.tmj');
@@ -21,9 +41,7 @@ export default class HouseScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 32,
     });
-
     this.load.image('parchemin', 'assets/images/parchemin.png');
-
     this.load.bitmapFont(
       'minogram',
       'fonts/minogram_6x10.png',
@@ -31,7 +49,12 @@ export default class HouseScene extends Phaser.Scene {
     );
   }
 
-  create() {
+  initializeVariables() {
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+  }
+
+  setupMap() {
     const map = this.make.tilemap({ key: 'houseMap' });
     const tiles = map.addTilesetImage('Inner', 'Inner');
     const NPC = map.addTilesetImage('NPC_test', 'NPC_test');
@@ -48,14 +71,29 @@ export default class HouseScene extends Phaser.Scene {
       { name: 'npc', tileset: NPC },
     ];
 
-    const layers = createLayers(map, layersConfig);
+    this.layers = createLayers(map, layersConfig);
+    this.scale.resize(map.widthInPixels, map.heightInPixels);
+  }
 
-    this.player = new Player(this, 200, 200, 'player');
-
-    this.physics.add.collider(this.player.sprite, layers.Meubles);
-    this.physics.add.collider(this.player.sprite, layers.Wall);
+  setupPlayer() {
+    this.player = new Player(this, 180, 225, 'player');
     this.player.sprite.anims.play('up', true);
+  }
 
+  setupCollisions() {
+    this.physics.add.collider(this.player.sprite, this.layers.Meubles);
+    this.physics.add.collider(this.player.sprite, this.layers.Wall);
+  }
+
+  setupCamera() {
+    const mapWidth = this.layers.Ground.width;
+    const mapHeight = this.layers.Ground.height;
+    this.cameras.main.centerOn(mapWidth, mapHeight);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1, 0, 40);
+    this.cameras.main.setDeadzone(10, 10);
+  }
+
+  setupDoors() {
     const doorConfig = {
       x: 174,
       y: 248,
@@ -66,38 +104,9 @@ export default class HouseScene extends Phaser.Scene {
       callback: this.exitHouse.bind(this),
     };
     this.door = createSprite(this, doorConfig);
+  }
 
-    const mapWidth = map.widthInPixels;
-    const mapHeight = map.heightInPixels;
-
-    this.cameras.main.centerOn(mapWidth, mapHeight);
-    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, 0, 40);
-    this.cameras.main.setDeadzone(10, 10); // Plus petite pour voir l'effet
-
-    const bookConfig = {
-      x: 184,
-      y: 105,
-      texture: 'Inner',
-      frame: 373,
-      width: 16,
-      height: 16,
-      callback: this.handleOverlap.bind(this),
-    };
-    this.livre = createSprite(this, bookConfig);
-    this.livre.setImmovable(true);
-    this.livre.setAngle(-90);
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    const parchmentConfig = {
-      x: 250, // Position x du parchemin
-      y: 250, // Position y du parchemin
-      texture: 'Inner',
-      frame: 1322, // Assurez-vous que le frame correspond à votre image de parchemin
-    };
-    this.parchemin = createSprite(this, parchmentConfig);
-    this.parchemin.setInteractive();
-    this.parchemin.setDepth(2);
-
+  setupUI() {
     this.add.bitmapText(
       90,
       5,
@@ -115,15 +124,34 @@ export default class HouseScene extends Phaser.Scene {
     );
     this.parcheminText.setVisible(false);
     this.parcheminText.setDepth(11);
-    // this.parcheminText.tint(0x223344);
-
-    this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-    console.log(mapHeight);
-    this.scale.resize(mapWidth, mapHeight);
   }
 
-  update() {
-    this.player.update(this.cursors);
+  setupInteractiveElements() {
+    const bookConfig = {
+      x: 184,
+      y: 105,
+      texture: 'Inner',
+      frame: 373,
+      width: 16,
+      height: 16,
+      callback: this.handleOverlap.bind(this),
+    };
+    this.livre = createSprite(this, bookConfig);
+    this.livre.setImmovable(true);
+    this.livre.setAngle(-90);
+
+    const parchmentConfig = {
+      x: 250,
+      y: 250,
+      texture: 'Inner',
+      frame: 1322,
+    };
+    this.parchemin = createSprite(this, parchmentConfig);
+    this.parchemin.setInteractive();
+    this.parchemin.setDepth(2);
+  }
+
+  checkBookInteraction() {
     if (
       Phaser.Geom.Intersects.RectangleToRectangle(
         this.player.sprite.getBounds(),
@@ -133,7 +161,9 @@ export default class HouseScene extends Phaser.Scene {
     ) {
       this.openPDF();
     }
+  }
 
+  checkParchmentInteraction() {
     this.input.keyboard.on(
       'keydown-E',
       () => {
@@ -161,7 +191,7 @@ export default class HouseScene extends Phaser.Scene {
       .image(this.cameras.main.centerX, this.cameras.main.centerY, 'parchemin')
       .setDepth(10);
     this.parcheminText.setVisible(true);
-    this.parchmentImage.setDisplaySize(200, 300); // Ajustez la taille selon vos besoins
+    this.parchmentImage.setDisplaySize(200, 300);
     this.input.keyboard.on('keydown', this.hideParchmentImage, this);
   }
 
@@ -175,14 +205,6 @@ export default class HouseScene extends Phaser.Scene {
   }
 
   exitHouse() {
-    // Récupérer la position du joueur stockée
-    let playerPosition = this.scene
-      .get('scene-game')
-      .data.get('playerPosition');
-    if (playerPosition) {
-      this.scene.get('scene-game').data.set('playerPosition', playerPosition);
-    }
-
     this.scene.start('scene-game');
   }
 }

@@ -59,7 +59,6 @@ export default class Statue extends Phaser.GameObjects.Container {
         duration: 500,
       });
     } else {
-      console.log('La statue ne peut pas être déplacée plus à gauche.');
     }
   }
 }

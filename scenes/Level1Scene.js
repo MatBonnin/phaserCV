@@ -18,8 +18,76 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   create() {
+    this.initializeVariables();
+    this.setupMap();
+    this.setupPlayer();
+    this.handleCollisions();
+    this.setupCamera();
+
+    this.setupDepth();
+    // generateEnemies(this, 10, 50, 50, 5, 'enemy-walk', 424, 432);
+    // Jouer la musique de fond si nécessaire
+    this.setupUI();
+    // Faire disparaître le texte après 5 secondes
+  }
+
+  update() {
+    this.player.update(this.cursors);
+
+    this.updateEnemies();
+
+    this.managePlayerAttack();
+
+    this.manageWaves();
+
+    this.healthText.setText(`Santé: ${this.player.getHealth()}`);
+  }
+
+  updateEnemies() {
+    this.enemies.children.iterate((enemy) => {
+      enemy.getData('ref').update();
+    });
+  }
+  managePlayerAttack() {
+    if (this.player.isAttacking() && !this.attackHandled) {
+      this.handlePlayerAttack();
+      this.attackHandled = true;
+      this.time.delayedCall(300, () => {
+        this.attackHandled = false;
+      });
+    }
+  }
+  manageWaves() {
+    if (this.enemies.getLength() === 0) {
+      this.wave += 1;
+      generateWaves(this.wave, this);
+      this.physics.add.collider(this.enemies, this.layers.mur);
+    }
+  }
+  setupDepth() {
+    this.layers.ground.setDepth(0);
+    this.layers.mur.setDepth(1);
+    this.layers.decoration.setDepth(2);
+    this.layers.flame.setDepth(4); // Lumiere a une profondeur fixe
+    this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
+  }
+  setupCamera() {
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1, -50, 20);
+    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
+    this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
+    this.cameras.main.setViewport(0, 0, 500, 300);
+  }
+
+  initializeVariables() {
     this.wave = 0;
+    this.enemies = this.physics.add.group();
+    this.cursors = this.input.keyboard.createCursorKeys();
+  }
+  setupMap() {
     const map = this.make.tilemap({ key: 'level1Map' });
+
+    this.mapWidth = map.widthInPixels;
+    this.mapHeight = map.heightInPixels;
     const floorTiles = map.addTilesetImage('atlas_floor-16x16', 'floorTiles');
     const wallsHigh = map.addTilesetImage(
       'atlas_walls_high-16x32',
@@ -36,10 +104,46 @@ export default class Level1Scene extends Phaser.Scene {
     ];
 
     this.layers = createLayers(map, layersConfig);
-    const mapWidth = map.widthInPixels;
-    const mapHeight = map.heightInPixels;
-    this.scale.resize(mapWidth, mapHeight);
 
+    this.scale.resize(this.mapWidth, this.mapHeight);
+
+    this.physics.world.bounds.width = this.mapWidth;
+    this.physics.world.bounds.height = this.mapHeight;
+    this.physics.world.setBounds(0, 0, this.mapWidth, this.mapHeight);
+  }
+
+  setupUI() {
+    const { width } = this.cameras.main;
+    this.healthText = this.createText(
+      10,
+      this.cameras.main.displayHeight,
+      `Santé: ${this.player.getHealth()}`,
+      20
+    );
+    this.waveText = this.createText(
+      180,
+      this.cameras.main.displayHeight,
+      `Manche : ${this.wave}`,
+      width / 25
+    );
+
+    const temporaryText = this.add
+      .text(20, 80, `Appuyer sur F pour attaquer.\n     Bonne chance !!`, {
+        fontSize: '18px',
+        fill: '#ffffff',
+      })
+      .setScrollFactor(0)
+      .setDepth(5);
+
+    this.time.delayedCall(5000, () => {
+      temporaryText.destroy();
+    });
+
+    this.backgroundMusic = this.sound.add('backgroundMusic');
+    this.backgroundMusic.play({ loop: true, volume: 0.5 });
+  }
+
+  setupPlayer() {
     // Récupérer la position du joueur stockée
     const playerPosition = this.scene
       .get('scene-level1')
@@ -49,108 +153,14 @@ export default class Level1Scene extends Phaser.Scene {
 
     this.player = new Player(this, startX, startY, 'player');
     this.events.on('playerDied', this.onPlayerDeath, this);
+    this.player.sprite.anims.play('up', true);
+  }
+
+  handleCollisions() {
     this.physics.add.collider(this.player.sprite, this.layers.mur);
     this.physics.add.collider(this.player.sprite, this.layers.decoration);
     this.physics.add.collider(this.player.sprite, this.layers.murLow);
-
-    this.player.sprite.anims.play('up', true);
-
-    this.physics.world.bounds.width = mapWidth;
-    this.physics.world.bounds.height = mapHeight;
-    this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
-
-    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1, -50, 0);
-    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
-    this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
-    this.cameras.main.setViewport(0, 0, 500, 300);
-
-    this.layers.ground.setDepth(0);
-    this.layers.mur.setDepth(1);
-    this.layers.decoration.setDepth(2);
-    this.layers.flame.setDepth(4); // Lumiere a une profondeur fixe
-    this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // Créer des ennemis
-    this.enemies = this.physics.add.group();
-
-    // generateEnemies(this, 10, 50, 50, 5, 'enemy-walk', 424, 432);
-    // Jouer la musique de fond si nécessaire
-    this.backgroundMusic = this.sound.add('backgroundMusic');
-    this.backgroundMusic.play({ loop: true, volume: 0.5 });
-
-    this.healthText = this.add
-      .text(
-        10,
-        this.cameras.main.displayHeight,
-        `Santé: ${this.player.getHealth()}`,
-        {
-          fontSize: '20px',
-          fill: '#ffffff',
-          align: 'left',
-        }
-      )
-      .setScrollFactor(0)
-      .setDepth(5)
-      .setOrigin(0, 1); // setOrigin ajusté à (0, 1) pour l'ancrage en bas
-    let textSize = this.cameras.main.width / 25; // Exemple de calcul dynamique
-    this.waveText = this.add
-      .text(180, this.cameras.main.displayHeight, `Manche : ${this.wave}`, {
-        fontSize: `${textSize}px`,
-        fill: '#ffffff',
-      })
-      .setScrollFactor(0)
-      .setDepth(5)
-      .setOrigin(0, 1);
-
-    this.loseSound = this.sound.add('loseSound');
-
-    const temporaryText = this.add
-      .text(20, 60, `Appuyer sur F pour attaquer.\n     Bonne chance !!`, {
-        fontSize: '18px',
-        fill: '#ffffff',
-      })
-      .setScrollFactor(0)
-      .setDepth(5);
-
-    // Faire disparaître le texte après 5 secondes
-    this.time.delayedCall(5000, () => {
-      temporaryText.destroy();
-    });
   }
-
-  update() {
-    this.player.update(this.cursors);
-
-    this.enemies.children.iterate((enemy) => {
-      enemy.getData('ref').update();
-    });
-
-    // Garder la profondeur fixe
-    this.player.sprite.setDepth(3);
-
-    // Gérer l'attaque du joueur
-    if (this.player.isAttacking() && !this.attackHandled) {
-      this.handlePlayerAttack();
-      this.attackHandled = true;
-      this.time.delayedCall(300, () => {
-        this.attackHandled = false;
-      });
-    }
-
-    this.healthText.setText(`Santé: ${this.player.getHealth()}`);
-
-    if (this.enemies.getLength() === 0) {
-      this.wave += 1;
-      generateWaves(this.wave, this);
-      this.physics.add.collider(this.enemies, this.layers.mur);
-      this.physics.add.collider(this.enemies, this.layers.murLow);
-      this.physics.add.collider(this.enemies, this.enemies);
-      this.waveText.setText(`Manche : ${this.wave}`);
-    }
-  }
-
   loadResources() {
     // Charger les tiles et autres ressources
     const resources = [
@@ -171,12 +181,12 @@ export default class Level1Scene extends Phaser.Scene {
 
     this.load.tilemapTiledJSON('level1Map', 'assets/map/level1.tmj');
     this.load.audio('loseSound', 'assets/sound/Lose.mp3');
+    this.loseSound = this.sound.add('loseSound');
     // Charger d'autres ressources audio si nécessaire
   }
   handlePlayerAttack() {
     // Vérifiez quels ennemis se trouvent dans le rayon d'attaque du joueur
     this.enemies.children.iterate((enemy) => {
-      console.log(enemy);
       if (enemy) {
         const distance = Phaser.Math.Distance.Between(
           this.player.sprite.x,
@@ -202,12 +212,22 @@ export default class Level1Scene extends Phaser.Scene {
     // Changer de scène, par exemple retour à GameScene
     this.scene.start('scene-game');
   }
-
+  createText(x, y, text, fontSize) {
+    return this.add
+      .text(x, y, text, {
+        fontSize: `${fontSize}px`,
+        fill: '#ffffff',
+        align: 'left',
+      })
+      .setScrollFactor(0)
+      .setDepth(5)
+      .setOrigin(0, 1);
+  }
   onPlayerDeath() {
     // Afficher le message de mort
     this.add
-      .text(170, 150, 'Vous êtes mort', {
-        fontSize: '40px',
+      .text(150, 150, 'Vous êtes mort', {
+        fontSize: '20px',
         fill: '#ff0000',
       })
       .setOrigin(0.5)

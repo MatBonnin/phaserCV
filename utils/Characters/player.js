@@ -69,7 +69,6 @@ export default class Player {
       this.health = 100;
       return;
     } else if (this.health <= 0) {
-      console.log('mort');
       this.health = 0;
       this.scene.events.emit('playerDied');
     } else {
@@ -81,7 +80,6 @@ export default class Player {
     if (heart.getData('type') === 'heart') {
       this.setHealth(this.getHealth() + heart.getData('healAmount'));
       heart.destroy();
-      console.log('Cœur collecté ! Vie régénérée.');
     }
   }
 

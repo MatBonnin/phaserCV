@@ -9,6 +9,25 @@ export default class CaveScene extends Phaser.Scene {
   }
 
   preload() {
+    this.loadResources();
+  }
+
+  create() {
+    this.initializeVariables();
+    this.setupMap();
+    this.setupPlayer();
+    this.setupCollisions();
+    this.setupCamera();
+    this.setupDepth();
+    this.setupExits();
+  }
+
+  update() {
+    this.player.update(this.cursors);
+    this.player.sprite.setDepth(3); // Garder la profondeur fixe
+  }
+
+  loadResources() {
     this.load.spritesheet('caveTiles', 'assets/spritesheet/cave.png', {
       frameWidth: 16,
       frameHeight: 16,
@@ -18,17 +37,19 @@ export default class CaveScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 32,
     });
-
     this.load.spritesheet('playerAttack', 'assets/player.png', {
       frameWidth: 32,
       frameHeight: 32,
     });
-
     // Charger le fichier audio si nécessaire
     // this.load.audio('backgroundMusic', 'assets/audio/backgroundMusic.mp3');
   }
 
-  create() {
+  initializeVariables() {
+    this.cursors = this.input.keyboard.createCursorKeys();
+  }
+
+  setupMap() {
     const map = this.make.tilemap({ key: 'caveMap' });
     const tiles = map.addTilesetImage('cave', 'caveTiles');
 
@@ -41,11 +62,16 @@ export default class CaveScene extends Phaser.Scene {
     ];
 
     this.layers = createLayers(map, layersConfig);
+
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
     this.scale.resize(mapWidth, 600);
 
-    // Récupérer la position du joueur stockée
+    this.physics.world.bounds.width = mapWidth;
+    this.physics.world.bounds.height = mapHeight;
+  }
+
+  setupPlayer() {
     const playerPosition = this.scene
       .get('scene-cave')
       .data.get('playerPosition');
@@ -53,10 +79,29 @@ export default class CaveScene extends Phaser.Scene {
     const startY = playerPosition ? playerPosition.y : 200;
 
     this.player = new Player(this, startX, startY, 'player');
-
-    this.physics.add.collider(this.player.sprite, this.layers.decore);
     this.player.sprite.anims.play('up', true);
+  }
 
+  setupCollisions() {
+    this.physics.add.collider(this.player.sprite, this.layers.decore);
+  }
+
+  setupCamera() {
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, 0, 100);
+    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
+    this.cameras.main.setDeadzone(300, 50); // Zone non suivie au centre de la caméra
+  }
+
+  setupDepth() {
+    this.layers.ground.setDepth(0);
+    this.layers.trou.setDepth(1);
+    this.layers.decore.setDepth(2);
+    this.layers.lumiere.setDepth(5); // Lumiere a une profondeur fixe
+    this.layers.headStatue.setDepth(4);
+    this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
+  }
+
+  setupExits() {
     const exitConfig = {
       x: 120, // Coordonnées de la sortie, ajustez-les selon votre carte
       y: 230,
@@ -77,45 +122,18 @@ export default class CaveScene extends Phaser.Scene {
       height: 50,
       callback: this.enterHole.bind(this),
     };
-    this.exit = createSprite(this, holeConfig);
-
-    this.physics.world.bounds.width = mapWidth;
-    this.physics.world.bounds.height = mapHeight;
-
-    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, 0, 100);
-    this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
-    this.cameras.main.setDeadzone(300, 50); // Zone non suivie au centre de la caméra
-
-    this.layers.ground.setDepth(0);
-    this.layers.trou.setDepth(1);
-    this.layers.decore.setDepth(2);
-    this.layers.lumiere.setDepth(5); // Lumiere a une profondeur fixe
-    this.layers.headStatue.setDepth(4);
-    this.player.sprite.setDepth(3); // Joueur toujours derrière lumiere
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-  }
-
-  update() {
-    this.player.update(this.cursors);
-
-    // Garder la profondeur fixe
-    this.player.sprite.setDepth(3);
+    this.hole = createSprite(this, holeConfig);
   }
 
   exitCave() {
-    // Sauvegarder la position du joueur
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
     this.scene.get('scene-cave').data.set('playerPosition', playerPosition);
-
-    // Changer de scène, par exemple retour à GameScene
     this.scene.start('scene-game');
   }
+
   enterHole() {
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
     this.scene.get('scene-cave').data.set('playerPosition', playerPosition);
-
-    // Changer de scène, par exemple retour à GameScene
     this.scene.start('scene-level1');
   }
 }
