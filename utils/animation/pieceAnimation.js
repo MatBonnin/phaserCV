@@ -1,8 +1,8 @@
 // utils/animation/pieceAnimation.js
-export function createPieceAnimation(scene) {
+export function createPieceAnimation(scene, texture) {
   scene.anims.create({
     key: 'piece-spin',
-    frames: scene.anims.generateFrameNumbers('pieces', {
+    frames: scene.anims.generateFrameNumbers(texture, {
       start: 132,
       end: 135,
     }),

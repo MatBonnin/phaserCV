@@ -2,6 +2,7 @@ import { createLayers, createSprite } from '../utils/utils';
 
 import Phaser from 'phaser';
 import Player from '../utils/Characters/player';
+import { createBulleAnimation } from '../utils/animation/bulleAnimation';
 
 export default class HouseScene extends Phaser.Scene {
   constructor() {
@@ -20,6 +21,7 @@ export default class HouseScene extends Phaser.Scene {
     this.setupCamera();
     this.setupDoors();
     this.setupUI();
+    this.setupAnimations();
     this.setupInteractiveElements();
   }
 
@@ -152,6 +154,20 @@ export default class HouseScene extends Phaser.Scene {
     this.livre.setImmovable(true);
     this.livre.setAngle(-90);
 
+    //bulle sprite withe createSprite and config
+    const bulleConfig = {
+      x: 222,
+      y: 178,
+      texture: 'objects',
+      frame: 200,
+    };
+    this.bulle = createSprite(this, bulleConfig);
+    this.bulle.setInteractive();
+    this.bulle.setImmovable(true);
+    this.bulle.setDepth(9);
+
+    this.bulle.anims.play('bulle-anim');
+
     const parchmentConfig = {
       x: 215,
       y: 195,
@@ -194,6 +210,7 @@ export default class HouseScene extends Phaser.Scene {
 
   toggleParchmentDisplay(open) {
     if (open) {
+      this.bulle.setVisible(false);
       this.parchmentImage = this.add
         .image(
           this.cameras.main.centerX,
@@ -221,6 +238,9 @@ export default class HouseScene extends Phaser.Scene {
       this.parcheminText.setVisible(false);
       this.input.keyboard.off('keydown', this.hideParchmentImage, this);
     }
+  }
+  setupAnimations() {
+    createBulleAnimation(this, 'objects');
   }
 
   openPDF() {

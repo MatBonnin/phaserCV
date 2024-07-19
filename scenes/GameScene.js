@@ -60,7 +60,7 @@ export default class GameScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 32,
     });
-    this.load.spritesheet('pieces', 'assets/spritesheet/objects.png', {
+    this.load.spritesheet('objects', 'assets/spritesheet/objects.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
@@ -170,7 +170,7 @@ export default class GameScene extends Phaser.Scene {
       { x: 430, y: 300 },
     ];
     piecePositions.forEach((pos, index) => {
-      const piece = new Piece(this, pos.x, pos.y, 'pieces', 'piece' + index);
+      const piece = new Piece(this, pos.x, pos.y, 'objects', 'piece' + index);
       this.pieces.add(piece.sprite);
     });
     this.physics.add.overlap(
@@ -190,7 +190,7 @@ export default class GameScene extends Phaser.Scene {
 
   setupAnimations() {
     createAnimations(this);
-    createPieceAnimation(this);
+    createPieceAnimation(this, 'objects');
     waterfallAnimattion(this);
   }
 
