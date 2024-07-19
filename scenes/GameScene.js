@@ -108,7 +108,7 @@ export default class GameScene extends Phaser.Scene {
     this.physics.world.bounds.height = mapHeight;
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, -110, 20);
 
     this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
     this.cameras.main.setDeadzone(50, 50); // Plus petite pour voir l'effet

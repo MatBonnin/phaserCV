@@ -69,9 +69,10 @@ export default class HouseScene extends Phaser.Scene {
 
     const mapWidth = map.widthInPixels;
     const mapHeight = map.heightInPixels;
-    this.cameras.main.setBounds(0, 0, mapWidth, mapHeight);
+
     this.cameras.main.centerOn(mapWidth, mapHeight);
-    this.cameras.main.startFollow(this.player.sprite);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, 0, 40);
+    this.cameras.main.setDeadzone(10, 10); // Plus petite pour voir l'effet
 
     const bookConfig = {
       x: 184,

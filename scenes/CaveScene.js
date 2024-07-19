@@ -82,7 +82,7 @@ export default class CaveScene extends Phaser.Scene {
     this.physics.world.bounds.width = mapWidth;
     this.physics.world.bounds.height = mapHeight;
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, 0, 100);
     this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
     this.cameras.main.setDeadzone(300, 50); // Zone non suivie au centre de la caméra
 

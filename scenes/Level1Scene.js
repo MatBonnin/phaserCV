@@ -14,56 +14,7 @@ export default class Level1Scene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet(
-      'floorTiles',
-      'assets/spritesheet/atlas_floor-16x16.png',
-      {
-        frameWidth: 16,
-        frameHeight: 16,
-      }
-    );
-    this.load.spritesheet('objectTiles', 'assets/spritesheet/objects.png', {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-    this.load.spritesheet(
-      'wallsHigh',
-      'assets/spritesheet/atlas_walls_high-16x32.png',
-      {
-        frameWidth: 16,
-        frameHeight: 32,
-      }
-    );
-    this.load.spritesheet(
-      'wallsLow',
-      'assets/spritesheet/atlas_walls_low-16x16.png',
-      {
-        frameWidth: 16,
-        frameHeight: 16,
-      }
-    );
-    this.load.spritesheet(
-      'enemies',
-      'assets/spritesheet/0x72_DungeonTilesetII_v1.7.png',
-      {
-        frameWidth: 16,
-        frameHeight: 16,
-      }
-    );
-    this.load.tilemapTiledJSON('level1Map', 'assets/map/level1.tmj');
-    this.load.spritesheet('player', 'assets/player.png', {
-      frameWidth: 16,
-      frameHeight: 32,
-    });
-
-    this.load.spritesheet('playerAttack', 'assets/player.png', {
-      frameWidth: 32,
-      frameHeight: 32,
-    });
-
-    // Charger le fichier audio si nécessaire
-
-    this.load.audio('loseSound', 'assets/sound/Lose.mp3');
+    this.loadResources();
   }
 
   create() {
@@ -108,9 +59,10 @@ export default class Level1Scene extends Phaser.Scene {
     this.physics.world.bounds.height = mapHeight;
     this.physics.world.setBounds(0, 0, mapWidth, mapHeight);
 
-    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1, -50, 0);
     this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
     this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
+    this.cameras.main.setViewport(0, 0, 500, 300);
 
     this.layers.ground.setDepth(0);
     this.layers.mur.setDepth(1);
@@ -131,7 +83,7 @@ export default class Level1Scene extends Phaser.Scene {
     this.healthText = this.add
       .text(
         10,
-        this.cameras.main.displayHeight - 40,
+        this.cameras.main.displayHeight,
         `Santé: ${this.player.getHealth()}`,
         {
           fontSize: '20px',
@@ -142,45 +94,23 @@ export default class Level1Scene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(5)
       .setOrigin(0, 1); // setOrigin ajusté à (0, 1) pour l'ancrage en bas
-
+    let textSize = this.cameras.main.width / 25; // Exemple de calcul dynamique
     this.waveText = this.add
-      .text(
-        190,
-        this.cameras.main.displayHeight - 40,
-        `Manche : ${this.wave}`,
-        {
-          fontSize: '20px',
-          fill: '#ffffff',
-          align: 'left',
-        }
-      )
+      .text(180, this.cameras.main.displayHeight, `Manche : ${this.wave}`, {
+        fontSize: `${textSize}px`,
+        fill: '#ffffff',
+      })
       .setScrollFactor(0)
       .setDepth(5)
-      .setOrigin(0, 1); // setOrigin ajusté à (0, 1) pour l'ancrage en bas
-
-    // Écouteur de redimensionnement
-    this.scale.on('resize', (gameSize, baseSize, displaySize, resolution) => {
-      // Réajuster la position du texte en fonction de la nouvelle taille de la fenêtre
-      this.healthText.setY(gameSize.height - 40);
-      this.waveText.setY(gameSize.height - 40);
-    });
-
-    // Assurer que le texte est correctement positionné dès le début
-    this.healthText.setY(this.cameras.main.displayHeight - 40);
-    this.waveText.setY(this.cameras.main.displayHeight - 40);
+      .setOrigin(0, 1);
 
     this.loseSound = this.sound.add('loseSound');
 
     const temporaryText = this.add
-      .text(
-        20,
-        60,
-        'Bienvenue dans le jeu !\nAppuyer sur F pour attaquer.\n     Bonne chance !!',
-        {
-          fontSize: '18px',
-          fill: '#ffffff',
-        }
-      )
+      .text(20, 60, `Appuyer sur F pour attaquer.\n     Bonne chance !!`, {
+        fontSize: '18px',
+        fill: '#ffffff',
+      })
       .setScrollFactor(0)
       .setDepth(5);
 
@@ -221,6 +151,28 @@ export default class Level1Scene extends Phaser.Scene {
     }
   }
 
+  loadResources() {
+    // Charger les tiles et autres ressources
+    const resources = [
+      ['floorTiles', 'assets/spritesheet/atlas_floor-16x16.png', 16, 16],
+      ['objectTiles', 'assets/spritesheet/objects.png', 16, 16],
+      ['wallsHigh', 'assets/spritesheet/atlas_walls_high-16x32.png', 16, 32],
+      ['wallsLow', 'assets/spritesheet/atlas_walls_low-16x16.png', 16, 16],
+      ['enemies', 'assets/spritesheet/0x72_DungeonTilesetII_v1.7.png', 16, 16],
+      ['player', 'assets/player.png', 16, 32],
+      ['playerAttack', 'assets/player.png', 32, 32],
+    ];
+    resources.forEach(([key, path, width, height]) => {
+      this.load.spritesheet(key, path, {
+        frameWidth: width,
+        frameHeight: height,
+      });
+    });
+
+    this.load.tilemapTiledJSON('level1Map', 'assets/map/level1.tmj');
+    this.load.audio('loseSound', 'assets/sound/Lose.mp3');
+    // Charger d'autres ressources audio si nécessaire
+  }
   handlePlayerAttack() {
     // Vérifiez quels ennemis se trouvent dans le rayon d'attaque du joueur
     this.enemies.children.iterate((enemy) => {
