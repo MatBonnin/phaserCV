@@ -51,6 +51,7 @@ export default class Statue extends Phaser.GameObjects.Container {
       };
       const sprite = createSprite(this.scene, spriteConfig);
       sprite.body.setSize(5, 5);
+
       sprite.setDepth(1); // Assurez-vous que la porte est derrière la statue
       door.add(sprite);
     });

@@ -53,19 +53,21 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupNPCs() {
-    const startX = 0; // Position X initiale
-    const startY = 0; // Position Y initiale
+    const startX = 50; // Position X initiale
+    const startY = 50; // Position Y initiale
     const stepX = 20; // Pas en X
     const maxLineX = 300; // Limite en X avant de passer à la ligne suivante
-    const stepY = 50; // Pas en Y après avoir atteint la limite X
+    const stepY = 10; // Pas en Y après avoir atteint la limite X
     let x = startX;
     let y = startY;
 
-    for (let i = 0; i < 200; i++) {
-      let npc = new NPC(this, x, y, 'npc');
-      npc.sprite.setDepth(100);
-      npc.sprite.play('dance_animation'); // Assure-toi que l'animation 'dance_animation' est définie
-      this.add.existing(npc);
+    for (let i = 0; i < 350; i++) {
+      if (i % 2 === 0) {
+        let npc = new NPC(this, x, y, 'npc');
+        npc.sprite.setDepth(100);
+        npc.sprite.play('dance_animation'); // Assure-toi que l'animation 'dance_animation' est définie
+        this.add.existing(npc);
+      }
 
       // Incrémente X pour le prochain NPC
       x += stepX;
