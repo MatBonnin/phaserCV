@@ -7,7 +7,33 @@
     <title>Phaser CV</title>
   </head>
   <body id="body">
+    <div id="welcomeModal">
+      <div>
+        <h2>Bienvenue dans Phaser CV!</h2>
+        <p>
+          Explorez ma maison dans ce jeu pour découvrir mon CV et mes
+          compétences en développement, un petit jeu vous attend dans la grotte
+          et enfin une enigme est à résoudre. Cliquez sur OK pour commencer à
+          jouer et en savoir plus!
+        </p>
+        <button onclick="startGame()">OK</button>
+      </div>
+      <div class="background"></div>
+    </div>
+
     <div id="gameCanvas"></div>
     <script type="module" src="./main.js"></script>
   </body>
 </html>
+
+<script>
+  window.onload = function () {
+    document.getElementById('welcomeModal').style.display = 'flex';
+  };
+
+  function startGame() {
+    document.getElementById('welcomeModal').style.display = 'none';
+
+    // Initialise ton jeu ici
+  }
+</script>

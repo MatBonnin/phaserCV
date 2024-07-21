@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { createSprite } from '../utils';
 
 export default class Statue extends Phaser.GameObjects.Container {
   constructor(scene, x, y) {
@@ -21,8 +22,9 @@ export default class Statue extends Phaser.GameObjects.Container {
     });
 
     scene.physics.world.enable(this);
-    this.body.setSize(25, 30);
+    this.body.setSize(30, 35);
     this.body.setImmovable(true);
+    this.body.setOffset(-6, 0);
 
     scene.add.existing(this);
 
@@ -32,21 +34,32 @@ export default class Statue extends Phaser.GameObjects.Container {
   }
 
   createHiddenDoor(x, y) {
-    const door = this.scene.add.group();
     const doorFrames = [155, 156, 195, 196];
+    const door = this.scene.add.group();
     doorFrames.forEach((frame, index) => {
       const xOffset = (index % 2) * 16;
       const yOffset = Math.floor(index / 2) * 16;
-      const sprite = this.scene.add.sprite(
-        x + xOffset,
-        y + 32 + yOffset,
-        'tiles',
-        frame
-      );
+      // Utiliser createSprite pour chaque frame
+      const spriteConfig = {
+        x: x + xOffset,
+        y: y + 32 + yOffset,
+        texture: 'tiles',
+        frame: frame,
+        width: 16, // La largeur et la hauteur doivent correspondre à celles de tes sprites
+        height: 16,
+        callback: this.enterRick.bind(this),
+      };
+      const sprite = createSprite(this.scene, spriteConfig);
+      sprite.body.setSize(5, 5);
       sprite.setDepth(1); // Assurez-vous que la porte est derrière la statue
       door.add(sprite);
     });
     return door;
+  }
+
+  enterRick() {
+    this.scene.acccueilMusic.stop();
+    this.scene.scene.start('scene-rick');
   }
 
   moveLeft(distance) {

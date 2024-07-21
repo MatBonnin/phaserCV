@@ -94,23 +94,49 @@ export function createAnimations(scene) {
 // };
 
 export function createSprite(scene, spriteConfig) {
-  const sprite = scene.physics.add.sprite(
-    spriteConfig.x,
-    spriteConfig.y,
-    spriteConfig.texture,
-    spriteConfig.frame
-  );
-  sprite.body.setSize(spriteConfig.width, spriteConfig.height);
-  if (spriteConfig.callback) {
-    scene.physics.add.overlap(
-      scene.player.sprite,
-      sprite,
-      spriteConfig.callback,
-      null,
-      scene
+  // Vérifier si 'frame' est un tableau pour gérer plusieurs frames
+  if (Array.isArray(spriteConfig.frame)) {
+    const group = scene.physics.add.group();
+    spriteConfig.frame.forEach((frameId) => {
+      const singleSprite = scene.physics.add.sprite(
+        spriteConfig.x,
+        spriteConfig.y,
+        spriteConfig.texture,
+        frameId
+      );
+      singleSprite.body.setSize(spriteConfig.width, spriteConfig.height);
+      if (spriteConfig.callback) {
+        scene.physics.add.overlap(
+          scene.player.sprite,
+          singleSprite,
+          spriteConfig.callback,
+          null,
+          scene
+        );
+      }
+      group.add(singleSprite);
+    });
+    return group;
+  } else {
+    // Gérer le cas d'un seul sprite comme avant
+    const sprite = scene.physics.add.sprite(
+      spriteConfig.x,
+      spriteConfig.y,
+      spriteConfig.texture,
+      spriteConfig.frame
     );
+    sprite.body.setSize(spriteConfig.width, spriteConfig.height);
+    if (spriteConfig.callback) {
+      scene.physics.add.overlap(
+        scene.player.sprite,
+        sprite,
+        spriteConfig.callback,
+        null,
+        scene
+      );
+    }
+    return sprite;
   }
-  return sprite;
 }
 
 export function generateEnemies(

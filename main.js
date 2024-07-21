@@ -5,6 +5,7 @@ import GameScene from './scenes/GameScene';
 import HouseScene from './scenes/HouseScene';
 import Level1Scene from './scenes/Level1Scene';
 import Phaser from 'phaser';
+import rickScene from './scenes/rickScene';
 
 const config = {
   type: Phaser.WEBGL,
@@ -18,7 +19,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [GameScene, HouseScene, CaveScene, Level1Scene],
+  scene: [GameScene, HouseScene, CaveScene, Level1Scene, rickScene],
   scale: {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     zoom: 3, // Désactivez le redimensionnement automatique

@@ -146,6 +146,11 @@ export default class GameScene extends Phaser.Scene {
       this.layers.ground.width,
       this.layers.ground.height
     );
+
+    // Définir les collisions pour le PNJ
+    this.physics.add.collider(this.npc.sprite, this.layers.Maison);
+    this.physics.add.collider(this.npc.sprite, this.layers.Statue);
+    this.physics.add.collider(this.npc.sprite, this.player.sprite);
   }
 
   setupCamera() {
@@ -170,7 +175,7 @@ export default class GameScene extends Phaser.Scene {
 
   setupNPC() {
     createNPCAnimations(this);
-    this.npc = new NPC(this, 400, 400, 'npc');
+    this.npc = new NPC(this, 400, 400, 'npc', 'walk');
   }
 
   setupPieces() {
