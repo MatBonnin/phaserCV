@@ -22,12 +22,13 @@ export default class GameScene extends Phaser.Scene {
     this.initializeVariables();
     this.setupMap();
     this.setupPlayer();
+    this.setupNPC();
     this.setupDoors();
     this.setupCollisions();
     this.setupCamera();
     this.setupDepth();
     this.setupUI();
-    this.setupNPC();
+
     this.setupAnimations();
     this.setupPieces();
     this.setupStatue();
@@ -40,6 +41,15 @@ export default class GameScene extends Phaser.Scene {
     this.updateDepth();
     this.npc.update(time);
     this.checkStatueInteraction();
+
+    // if (
+    //   this.player.sprite.x > this.map.widthInPixels - 200 &&
+    //   this.cursors.right.isDown
+    // ) {
+    //   this.cameras.main.stopFollow(this.player.sprite);
+    // } else {
+    //   this.cameras.main.startFollow(this.player.sprite);
+    // }
   }
 
   loadResources() {
@@ -81,8 +91,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupMap() {
-    const map = this.make.tilemap({ key: 'map' });
-    const tiles = map.addTilesetImage('tileset', 'tiles');
+    this.map = this.make.tilemap({ key: 'map' });
+    const tiles = this.map.addTilesetImage('tileset', 'tiles');
     const layersConfig = [
       { name: 'ground', tileset: tiles },
       { name: 'Maison', tileset: tiles, collision: true },
@@ -90,8 +100,8 @@ export default class GameScene extends Phaser.Scene {
       { name: 'toit', tileset: tiles },
       { name: 'doors', tileset: tiles },
     ];
-    this.layers = createLayers(map, layersConfig);
-    this.scale.resize(900, 900);
+    this.layers = createLayers(this.map, layersConfig);
+    this.scale.resize(this.map.widthInPixels, this.map.heightInPixels);
   }
 
   setupPlayer() {
@@ -99,15 +109,15 @@ export default class GameScene extends Phaser.Scene {
       .get('scene-game')
       .data.get('playerPosition');
 
-    const startX = playerPosition ? playerPosition.x : 55;
-    const startY = playerPosition ? playerPosition.y : 110;
+    const startX = playerPosition ? playerPosition.x : 289;
+    const startY = playerPosition ? playerPosition.y : 366;
     this.player = new Player(this, startX, startY, 'player');
   }
 
   setupDoors() {
     const doorConfig = {
-      x: 390,
-      y: 285,
+      x: 630,
+      y: 515,
       texture: 'tiles',
       frame: 1322,
       width: 16,
@@ -117,8 +127,8 @@ export default class GameScene extends Phaser.Scene {
     this.door = createSprite(this, doorConfig);
 
     const doorCaveConfig = {
-      x: 55,
-      y: 90,
+      x: 292,
+      y: 312,
       texture: 'tiles',
       frame: 250,
       width: 16,
@@ -139,7 +149,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupCamera() {
-    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, -110, 20);
+    this.cameras.main.startFollow(this.player.sprite, true, 0.5, 0.5, -150, 20);
     this.cameras.main.setLerp(0.1, 0.1);
     this.cameras.main.setDeadzone(50, 50);
   }
@@ -150,24 +160,25 @@ export default class GameScene extends Phaser.Scene {
     this.layers.habillage.setDepth(3);
     this.layers.doors.setDepth(5);
     this.player.sprite.setDepth(6);
+    this.npc.sprite.setDepth(6);
   }
 
   setupUI() {
-    this.add.bitmapText(45, 65, 'minogram', `Game`, 10).setDepth(5);
-    this.add.bitmapText(378, 240, 'minogram', `Infos`, 10).setDepth(5);
+    this.add.bitmapText(285, 290, 'minogram', `Game`, 10).setDepth(5);
+    this.add.bitmapText(620, 470, 'minogram', `Infos`, 10).setDepth(5);
   }
 
   setupNPC() {
     createNPCAnimations(this);
-    this.npc = new NPC(this, 400, 200, 'npc');
+    this.npc = new NPC(this, 400, 400, 'npc');
   }
 
   setupPieces() {
     this.pieces = this.physics.add.group();
     const piecePositions = [
-      { x: 100, y: 150 },
-      { x: 250, y: 100 },
-      { x: 430, y: 300 },
+      { x: 337, y: 381 },
+      { x: 511, y: 462 },
+      { x: 686, y: 517 },
     ];
     piecePositions.forEach((pos, index) => {
       const piece = new Piece(this, pos.x, pos.y, 'objects', 'piece' + index);
@@ -184,8 +195,9 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupStatue() {
-    this.statue = new Statue(this, 330, 120);
+    this.statue = new Statue(this, 569, 345);
     this.physics.add.collider(this.player.sprite, this.statue);
+    this.physics.add.collider(this.npc.sprite, this.statue);
   }
 
   setupAnimations() {

@@ -27,8 +27,8 @@ export default class Statue extends Phaser.GameObjects.Container {
     scene.add.existing(this);
 
     // Créer la porte cachée et ajuster sa position
-    this.hiddenDoor = this.createHiddenDoor(330, 100);
-    this.setDepth(7); // Définir le depth de la statue pour qu'elle soit devant
+    this.hiddenDoor = this.createHiddenDoor(x, y - 20);
+    this.setDepth(5); // Définir le depth de la statue pour qu'elle soit devant
   }
 
   createHiddenDoor(x, y) {

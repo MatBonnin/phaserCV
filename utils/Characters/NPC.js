@@ -15,7 +15,7 @@ class NPC {
 
     this.moveDuration = 2000; // Durée pendant laquelle le PNJ se déplace dans une direction
     this.lastMoveTime = 0; // Temps du dernier mouvement
-
+    this.sprite.setImmovable(true);
     // Initialiser le mouvement du PNJ
     this.moveNPC();
   }

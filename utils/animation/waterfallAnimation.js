@@ -61,21 +61,21 @@ export function waterfallAnimattion(scene) {
   });
 
   // Placer l'animation sur la carte
-  const waterfallTop = scene.add.sprite(135, 54, 'tiles'); // Coordonnes x et y pour la partie supérieure de la chute
+  const waterfallTop = scene.add.sprite(376, 280, 'tiles'); // Coordonnes x et y pour la partie supérieure de la chute
   waterfallTop.play('waterfallAnimation');
 
-  const waterfallMiddle = scene.add.sprite(135, 70, 'tiles'); // 16 pixels en dessous
+  const waterfallMiddle = scene.add.sprite(376, 296, 'tiles'); // 16 pixels en dessous
   waterfallMiddle.play('waterfallAnimationMiddle');
 
-  const waterfallBottom = scene.add.sprite(135, 86, 'tiles'); // Encore 16 pixels en dessous
+  const waterfallBottom = scene.add.sprite(376, 312, 'tiles'); // Encore 16 pixels en dessous
   waterfallBottom.play('waterfallAnimationDown');
 
-  const waterfallWater = scene.add.sprite(135, 104, 'tiles'); // Encore 16 pixels en dessous
+  const waterfallWater = scene.add.sprite(376, 328, 'tiles'); // Encore 16 pixels en dessous
   waterfallWater.play('waterfallWater');
 
-  const waterfallWaterLeft = scene.add.sprite(119, 104, 'tiles'); // 16 pixels à gauche
+  const waterfallWaterLeft = scene.add.sprite(360, 328, 'tiles'); // 16 pixels à gauche
   waterfallWaterLeft.play('waterfallWaterLeft');
 
-  const waterfallWaterRight = scene.add.sprite(151, 104, 'tiles'); // 16 pixels à droite
+  const waterfallWaterRight = scene.add.sprite(392, 328, 'tiles'); // 16 pixels à droite
   waterfallWaterRight.play('waterfallWaterRight');
 }
