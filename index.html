@@ -20,6 +20,10 @@
       </div>
       <div class="background"></div>
     </div>
+    <div id="mobileWarning">
+      Désolé, ce contenu n'est pas disponible sur mobile.
+      <button onclick="closeWarning()">Fermer</button>
+    </div>
 
     <div id="gameCanvas"></div>
     <script type="module" src="./main.js"></script>
@@ -28,8 +32,24 @@
 
 <script>
   window.onload = function () {
+    checkMobileDevice();
     document.getElementById('welcomeModal').style.display = 'flex';
   };
+
+  function checkMobileDevice() {
+    const userAgent = navigator.userAgent;
+    if (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        userAgent
+      )
+    ) {
+      document.getElementById('mobileWarning').style.display = 'flex';
+    }
+  }
+
+  function closeWarning() {
+    document.getElementById('mobileWarning').style.display = 'none';
+  }
 
   function startGame() {
     document.getElementById('welcomeModal').style.display = 'none';
