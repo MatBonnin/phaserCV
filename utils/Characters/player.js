@@ -1,3 +1,4 @@
+import Axe from '../objects/Axe';
 import Phaser from 'phaser';
 
 export default class Player {
@@ -15,12 +16,35 @@ export default class Player {
     this.attacking = false;
     this.attackPower = 10; // Puissance de l'attaque du joueur
     this.health = 100;
+    this.attackDistance = 40;
     this.attackKey.on('down', () => {
       this.attacking = true;
+      this.sprite.body.setOffset(9, 10);
       this.scene.time.delayedCall(300, () => {
         this.attacking = false;
+        // this.sprite.body.setOffset(1.2, this.sprite.height / 3);
+        switch (this.direction) {
+          case 'left':
+            this.sprite.anims.play('left', true);
+            break;
+          case 'right':
+            this.sprite.anims.play('right', true);
+            break;
+          case 'up':
+            this.sprite.anims.play('up', true);
+            break;
+          case 'down':
+            this.sprite.anims.play('down', true);
+            break;
+        }
+        this.sprite.body.setOffset(1.2, this.sprite.height / 3);
       });
     });
+
+    this.axe = new Axe(scene, x, y, 'dungeon'); // Ajouter une hache
+    this.throwKey = scene.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.R
+    ); // Touche pour lancer la hache
   }
 
   update(cursors) {
@@ -61,6 +85,13 @@ export default class Player {
       } else {
         this.sprite.anims.stop();
       }
+    }
+
+    if (
+      Phaser.Input.Keyboard.JustDown(this.throwKey) &&
+      !this.axe.sprite.active
+    ) {
+      this.axe.throw(this.sprite.x, this.sprite.y, this.direction);
     }
   }
 

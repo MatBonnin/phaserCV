@@ -1,4 +1,4 @@
-import { createAnimations, createLayers, createSprite } from '../utils/utils';
+import { createLayers, createSprite } from '../utils/utils';
 
 import NPC from '../utils/Characters/NPC';
 import Phaser from 'phaser';
@@ -7,6 +7,7 @@ import Player from '../utils/Characters/player';
 import Statue from '../utils/objects/Statue';
 import { createNPCAnimations } from '../utils/animation/NPCAnimations';
 import { createPieceAnimation } from '../utils/animation/pieceAnimation';
+import { createPlayerAnimations } from '../utils/animation/playerAnimation';
 import { waterfallAnimattion } from '../utils/animation/waterfallAnimation';
 
 export default class GameScene extends Phaser.Scene {
@@ -74,6 +75,15 @@ export default class GameScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
+
+    this.load.spritesheet(
+      'dungeon',
+      'assets/spritesheet/0x72_DungeonTilesetII_v1.7.png',
+      {
+        frameWidth: 16,
+        frameHeight: 16,
+      }
+    );
     this.load.bitmapFont(
       'minogram',
       'fonts/minogram_6x10.png',
@@ -206,7 +216,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   setupAnimations() {
-    createAnimations(this);
+    createPlayerAnimations(this);
     createPieceAnimation(this, 'objects');
     waterfallAnimattion(this);
   }

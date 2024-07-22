@@ -50,7 +50,21 @@ export default class Level1Scene extends Phaser.Scene {
   }
   managePlayerAttack() {
     if (this.player.isAttacking() && !this.attackHandled) {
-      this.handlePlayerAttack();
+      this.enemies.children.iterate((enemy) => {
+        if (
+          enemy &&
+          Phaser.Math.Distance.Between(
+            this.player.sprite.x,
+            this.player.sprite.y,
+            enemy.x,
+            enemy.y
+          ) < this.player.attackDistance
+        ) {
+          enemy
+            .getData('ref')
+            .takeDamage(this.player.getAttackPower(), this.player);
+        }
+      });
       this.attackHandled = true;
       this.time.delayedCall(300, () => {
         this.attackHandled = false;
@@ -60,8 +74,13 @@ export default class Level1Scene extends Phaser.Scene {
   manageWaves() {
     if (this.enemies.getLength() === 0) {
       this.wave += 1;
-      generateWaves(this.wave, this);
-      this.physics.add.collider(this.enemies, this.layers.mur);
+      if (this.wave > 18) {
+        this.finish();
+      } else {
+        generateWaves(this.wave, this);
+        this.physics.add.collider(this.enemies, this.layers.mur);
+        this.physics.add.collider(this.enemies, this.enemies);
+      }
     }
   }
   setupDepth() {
@@ -76,6 +95,20 @@ export default class Level1Scene extends Phaser.Scene {
     this.cameras.main.setLerp(0.1, 0.1); // Lissage horizontal et vertical
     this.cameras.main.setDeadzone(50, 50); // Zone non suivie au centre de la caméra
     this.cameras.main.setViewport(0, 0, 500, 300);
+  }
+  finish() {
+    this.add
+      .text(150, 150, 'Vous avez gagné !!!!', {
+        fontSize: '20px',
+        fill: '#17C211',
+      })
+      .setOrigin(0.5)
+      .setDepth(10);
+
+    // Attendre 5 secondes avant de relancer
+    this.time.delayedCall(5000, () => {
+      this.scene.start('scene-game');
+    });
   }
 
   initializeVariables() {
@@ -195,10 +228,10 @@ export default class Level1Scene extends Phaser.Scene {
           enemy.y
         );
 
-        if (distance < 20) {
+        if (distance < this.player.attackDistance) {
           // Ajustez ce rayon d'attaque selon vos besoins
           const attackPower = this.player.getAttackPower();
-          enemy.getData('ref').takeDamage(attackPower);
+          enemy.getData('ref').takeDamage(attackPower, this.player);
         }
       }
     });

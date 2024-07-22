@@ -14,7 +14,7 @@ export default class Enemy {
     this.animationKey = config.animationKey || 'default';
     this.animationStart = config.animationStart || 0;
     this.animationEnd = config.animationEnd || 0;
-    this.attackRange = config.attackRange || 30; // rayon d'attaque
+    this.attackRange = config.attackRange || 20; // rayon d'attaque
     this.attackTimer = null; // Timer pour l'attaque
     this.dropRate = config.dropRate || 0.3; // Taux de drop
     this.target = null;
@@ -61,7 +61,7 @@ export default class Enemy {
   startAttacking() {
     if (!this.attackTimer) {
       this.attackTimer = this.scene.time.addEvent({
-        delay: 1000, // attaque toutes les secondes
+        delay: 500, // attaque toutes les secondes
         callback: this.attack,
         callbackScope: this,
         loop: true,
@@ -76,12 +76,46 @@ export default class Enemy {
     }
   }
 
-  takeDamage(amount) {
+  takeDamage(amount, attacker) {
     this.health -= amount;
     if (this.health <= 0) {
       this.die();
     } else {
+      // Afficher le texte de dégât
       this.showDamageText(this.sprite, '#ff0000', amount);
+
+      // Interrompre la poursuite et l'attaque
+      this.setTarget(null); // Arrêter de suivre l'attaquant
+
+      // Calcul de l'angle de l'attaque pour le recul
+      const angleFromAttacker = Phaser.Math.Angle.Between(
+        attacker.sprite.x,
+        attacker.sprite.y,
+        this.sprite.x,
+        this.sprite.y
+      );
+      const coef = 200;
+
+      // Appliquer une interpolation pour un recul plus doux et plus prononcé
+      const velocityX = coef * Math.cos(angleFromAttacker); // Force du recul sur l'axe X
+      const velocityY = coef * Math.sin(angleFromAttacker); // Force du recul sur l'axe Y
+      this.scene.tweens.add({
+        targets: this.sprite.body.velocity,
+        props: {
+          x: { value: velocityX, duration: 300, ease: 'Power0' },
+          y: { value: velocityY, duration: 300, ease: 'Power0' },
+        },
+        onComplete: () => {
+          if (this.sprite.body) {
+            this.sprite.body.setVelocity(0); // Arrêter le mouvement après le recul
+          }
+        },
+      });
+
+      // Reprendre la poursuite après un délai si nécessaire
+      this.scene.time.delayedCall(500, () => {
+        this.setTarget(this.scene.player); // Supposons que le joueur est la cible
+      });
     }
   }
 
@@ -121,6 +155,7 @@ export default class Enemy {
         'objectTiles',
         268
       );
+
       this.scene.physics.world.enable(heart);
       heart.setInteractive();
       heart.setData('type', 'heart');
