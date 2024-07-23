@@ -96,10 +96,26 @@ export default class GameScene extends Phaser.Scene {
 
   initializeVariables() {
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     this.piecesCollected =
       this.scene.get('scene-game').data.get('piecesCollected') || [];
   }
-
+  async generateNewMaze(size) {
+    try {
+      const response = await fetch(
+        `/.netlify/functions/generate-maze?size=${size}`
+      );
+      const data = await response.json();
+      if (!data.success) {
+        throw new Error('Erreur de génération du labyrinthe');
+      }
+      // Supposons que `data.map` contient le nouveau JSON du labyrinthe
+      this.cache.json.add('labyMap', data.map); // Met à jour le cache avec la nouvelle carte
+    } catch (err) {
+      console.error('Erreur de génération du labyrinthe:', err);
+      throw err;
+    }
+  }
   setupMap() {
     this.map = this.make.tilemap({ key: 'map' });
     const tiles = this.map.addTilesetImage('tileset', 'tiles');
@@ -138,7 +154,7 @@ export default class GameScene extends Phaser.Scene {
 
     const doorLabyConfig = {
       x: 575,
-      y: 310,
+      y: 304,
       texture: 'tiles',
       frame: 1322,
       width: 30,
@@ -146,6 +162,17 @@ export default class GameScene extends Phaser.Scene {
       callback: this.enterLaby.bind(this),
     };
     this.doorLaby = createSprite(this, doorLabyConfig);
+
+    const panelLabyConfig = {
+      x: 530,
+      y: 324,
+      texture: 'tiles',
+      frame: 114,
+      width: 30,
+      height: 30,
+      callback: this.handleOverlap.bind(this),
+    };
+    this.panelLaby = createSprite(this, panelLabyConfig);
 
     const doorCaveConfig = {
       x: 292,
@@ -161,6 +188,7 @@ export default class GameScene extends Phaser.Scene {
 
   setupCollisions() {
     this.physics.add.collider(this.player.sprite, this.layers.Maison);
+
     this.physics.world.setBounds(
       0,
       0,
@@ -198,7 +226,11 @@ export default class GameScene extends Phaser.Scene {
     createNPCAnimations(this);
     this.npc = new NPC(this, 400, 400, 'npc', 'walk');
   }
-
+  handleOverlap() {
+    if (this.keyE.isDown) {
+      this.showCustomLabyChoiceModal();
+    }
+  }
   setupPieces() {
     this.pieces = this.physics.add.group();
     const piecePositions = [
@@ -266,7 +298,37 @@ export default class GameScene extends Phaser.Scene {
       this.layers.toit.setDepth(this.player.sprite.depth + 1);
     }
   }
+  showCustomLabyChoiceModal() {
+    const modal = document.getElementById('myModal');
+    modal.style.display = 'block'; // Affiche la modale
 
+    const closeButton = document.querySelector('.close-button');
+    closeButton.onclick = function () {
+      modal.style.display = 'none'; // Ferme la modale
+    };
+
+    const confirmButton = modal.querySelector('button');
+    confirmButton.onclick = () => {
+      const size = modal.querySelector('input').value; // Récupère la valeur entrée
+      if (size) {
+        this.generateNewMaze(size)
+          .then(() => {
+            modal.style.display = 'none'; // Ferme la modale
+            // Tu peux ajouter ici d'autres actions après la génération du labyrinthe
+          })
+          .catch((err) => {
+            console.error('Erreur lors de la génération du labyrinthe:', err);
+            modal.style.display = 'none';
+          });
+      }
+    };
+
+    window.onclick = function (event) {
+      if (event.target === modal) {
+        modal.style.display = 'none'; // Ferme la modale si clic en dehors
+      }
+    };
+  }
   checkStatueInteraction() {
     if (
       this.canInteractWithStatue &&

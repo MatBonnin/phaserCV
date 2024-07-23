@@ -12,13 +12,40 @@
         <h2>Bienvenue dans Phaser CV!</h2>
         <p>
           Explorez ma maison dans ce jeu pour découvrir mon CV et mes
-          compétences en développement, un petit jeu vous attend dans la grotte
-          et enfin une enigme est à résoudre. Cliquez sur OK pour commencer à
-          jouer et en savoir plus!
+          compétences en développement, un petit jeu de combat vous attend dans
+          la grotte, un labyrinthe se trouve dans le chateau et enfin une enigme
+          est à résoudre. Cliquez sur OK pour commencer à jouer et en savoir
+          plus!
         </p>
+        <p>Cliquez sur OK pour commencer à jouer et en savoir plus!</p>
+
+        <p>Controles:</p>
+        <ul>
+          <li>Les Flèches directionnelles du clavier pour se déplacer.</li>
+          <li>
+            E pour intéragire. (Le panneau à l'entrée du chateau sert à modifier
+            la taille du labyrinthe)
+          </li>
+          <li>F pour attaquer</li>
+          <li>R pour lancer une hache (ça ne sert absolument à rien)</li>
+        </ul>
         <button onclick="startGame()">OK</button>
       </div>
       <div class="background"></div>
+    </div>
+
+    <div id="myModal" class="modal">
+      <div class="modal-content">
+        <span class="close-button">×</span>
+        <h1>Changer de labyrinthe</h1>
+        <p>Voulez-vous changer la taille du labyrinthe ?</p>
+        <input
+          type="number"
+          id="mazeSize"
+          placeholder="Entrez la taille du labyrinthe (ex: 20)"
+        />
+        <button onclick="submitMazeSize()">Confirmer</button>
+      </div>
     </div>
     <div id="mobileWarning">
       Désolé, ce contenu n'est pas disponible sur mobile.
@@ -33,6 +60,30 @@
   window.onload = function () {
     checkMobileDevice();
   };
+
+  function showLabyChoiceModal() {
+    const modal = document.getElementById('myModal');
+    modal.style.display = 'block';
+
+    const closeButton = document.querySelector('.close-button');
+    closeButton.onclick = function () {
+      modal.style.display = 'none';
+    };
+
+    window.onclick = function (event) {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
+  }
+
+  function submitMazeSize() {
+    const size = document.getElementById('mazeSize').value;
+    if (size) {
+      document.getElementById('myModal').style.display = 'none';
+      generateNewMaze(size); // Assure-toi que cette fonction est accessible globalement ou adaptée à ton contexte
+    }
+  }
 
   function checkMobileDevice() {
     const userAgent = navigator.userAgent;

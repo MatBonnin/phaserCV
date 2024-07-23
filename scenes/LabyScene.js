@@ -14,7 +14,11 @@ export default class LabyScene extends Phaser.Scene {
   }
 
   create() {
-    this.showLabyChoiceModal();
+    this.initializeVariables();
+    this.setupMap();
+    this.setupPlayer();
+    this.setupCollisions();
+    this.setupCamera();
   }
 
   update() {
@@ -24,12 +28,12 @@ export default class LabyScene extends Phaser.Scene {
   }
 
   loadResources() {
+    this.load.tilemapTiledJSON('labyMap', '/assets/map/laby.tmj');
     this.load.spritesheet('tiles', 'assets/spritesheet/tileset.png', {
       frameWidth: 16,
       frameHeight: 16,
     });
 
-    this.load.tilemapTiledJSON('labyMap', '/assets/map/laby.tmj');
     this.load.spritesheet('player', '/assets/player.png', {
       frameWidth: 16,
       frameHeight: 32,
@@ -76,48 +80,5 @@ export default class LabyScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite, true, 0.1, 0.1, 0, 0);
     this.cameras.main.setDeadzone(10, 10);
     this.cameras.main.setZoom(2);
-  }
-
-  showLabyChoiceModal() {
-    const choice = confirm('Voulez-vous changer de labyrinthe ?');
-    if (choice) {
-      const size = prompt(
-        'Entrez la taille du labyrinthe souhaité (par exemple 20):'
-      );
-      if (size) {
-        this.generateNewMaze(size)
-          .then(() => {
-            this.initializeVariables();
-            this.setupMap();
-            this.setupPlayer();
-            this.setupCollisions();
-            this.setupCamera();
-          })
-          .catch((err) => {
-            console.error('Erreur lors de la génération du labyrinthe : ', err);
-          });
-      }
-    } else {
-      this.initializeVariables();
-      this.setupMap();
-      this.setupPlayer();
-      this.setupCollisions();
-      this.setupCamera();
-    }
-  }
-
-  async generateNewMaze(size) {
-    try {
-      const response = await fetch(
-        `/.netlify/functions/generate-maze?size=${size}`
-      );
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error('Erreur de génération du labyrinthe');
-      }
-    } catch (err) {
-      console.error('Erreur de génération du labyrinthe:', err);
-      throw err;
-    }
   }
 }

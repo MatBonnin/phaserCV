@@ -27,7 +27,7 @@ body {
 }
 
 
-p,h2{
+p,h2,ul{
   color: #000000;
 }
 
@@ -83,4 +83,83 @@ p,h2{
   font-size: 24px;
   text-align: center;
   padding: 20px;
+}
+
+
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 10px;
+  width: 20%; /* Could be more or less, depending on screen size */
+  color: #000000;
+  
+}
+
+.modal-content input {
+  width: 80%; /* Ajuste la largeur du champ input */
+  padding: 10px; /* Ajoute de l'espace à l'intérieur du champ */
+  margin: 10px 0; /* Espacement autour du champ */
+  box-sizing: border-box; /* La largeur inclut le padding */
+  border: 2px solid #ccc; /* Bordure grise */
+  border-radius: 4px; /* Bords arrondis */
+  display: block; /* Assure que l'input occupe toute la ligne */
+  margin-left: auto; /* Centre l'input horizontalement */
+  margin-right: auto;
+}
+
+.modal-content h1,.modal-content p {
+  
+  padding: 10px; /* Ajoute de l'espace à l'intérieur du champ */
+  margin: 10px 0; /* Espacement autour du champ */
+  box-sizing: border-box; /* La largeur inclut le padding */
+ width: 70%;
+  display: block; /* Assure que l'input occupe toute la ligne */
+  margin-left: auto; /* Centre l'input horizontalement */
+  margin-right: auto;
+}
+
+.modal-content button {
+  width: 50%; /* Largeur du bouton */
+  padding: 10px 20px; /* Padding autour du texte du bouton */
+  background-color: #4CAF50; /* Couleur de fond verte */
+  color: white; /* Texte blanc */
+  border: none; /* Pas de bordure */
+  border-radius: 5px; /* Bords arrondis */
+  cursor: pointer; /* Change le curseur en main quand survolé */
+  display: block; /* Assure que le bouton occupe toute la ligne */
+  margin: 20px auto; /* Centrage et espacement autour du bouton */
+  transition: background-color 0.3s; /* Transition douce pour le hover */
+}
+
+.modal-content button:hover {
+  background-color: #45a049; /* Couleur plus foncée quand survolé */
+}
+
+.close-button {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }

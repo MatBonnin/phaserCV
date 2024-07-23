@@ -1,5 +1,6 @@
 from wcgenerator import generate_maze
 import json
+import sys
 
 def transform_labyrinth(input_string, rows, cols):
     # Transformer la chaîne de caractères en une liste de listes
@@ -75,7 +76,7 @@ def transform_labyrinth(input_string, rows, cols):
                 
     return result
 
-cote = 200
+cote = int(sys.argv[1])
 # Exemple d'utilisation de la fonction:
 input_string = generate_maze(cote,cote)
 rows = cote
@@ -90,9 +91,25 @@ with open('public/assets/map/laby.tmj', 'r') as file:
     tmj_data = json.load(file)
 
 # Insérer final_string dans le tableau data correspondant dans layers
-for layer in tmj_data["layers"]:
-    if layer["name"] == "mur":  # Nom du calque où insérer les données
-        layer["data"] = finalString[:-1].split(',')
+    for layer in tmj_data["layers"]:
+        if layer["name"] == "mur":  # Nom du calque où insérer les données
+            layer["data"] = finalString[:-1].split(',')
+        if layer["name"] == "Ground":  # Nom du calque où insérer les données
+            layer["data"] = [1] * (cote * cote)
+    
+    # Parcourir le JSON pour remplacer 'height' et 'width' par la valeur de 'cote'
+    def replace_height_width(data, cote):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if key in ['height', 'width']:
+                    data[key] = cote
+                else:
+                    replace_height_width(value, cote)
+        elif isinstance(data, list):
+            for item in data:
+                replace_height_width(item, cote)
+    
+    replace_height_width(tmj_data, cote)
 
 # Sauvegarder les modifications dans le fichier tmj
 with open('public/assets/map/laby.tmj', 'w') as file:
