@@ -100,22 +100,7 @@ export default class GameScene extends Phaser.Scene {
     this.piecesCollected =
       this.scene.get('scene-game').data.get('piecesCollected') || [];
   }
-  async generateNewMaze(size) {
-    try {
-      const response = await fetch(
-        `/.netlify/functions/generate-maze?size=${size}`
-      );
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error('Erreur de génération du labyrinthe');
-      }
-      // Supposons que `data.map` contient le nouveau JSON du labyrinthe
-      this.cache.json.add('labyMap', data.map); // Met à jour le cache avec la nouvelle carte
-    } catch (err) {
-      console.error('Erreur de génération du labyrinthe:', err);
-      throw err;
-    }
-  }
+
   setupMap() {
     this.map = this.make.tilemap({ key: 'map' });
     const tiles = this.map.addTilesetImage('tileset', 'tiles');
@@ -311,14 +296,20 @@ export default class GameScene extends Phaser.Scene {
     confirmButton.onclick = () => {
       const size = modal.querySelector('input').value; // Récupère la valeur entrée
       if (size) {
-        this.generateNewMaze(size)
-          .then(() => {
-            modal.style.display = 'none'; // Ferme la modale
-            // Tu peux ajouter ici d'autres actions après la génération du labyrinthe
-          })
-          .catch((err) => {
-            console.error('Erreur lors de la génération du labyrinthe:', err);
+        fetch('/.netlify/functions/resize-maze', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ size }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log(data.message);
             modal.style.display = 'none';
+          })
+          .catch((error) => {
+            console.error('Erreur:', error);
           });
       }
     };
