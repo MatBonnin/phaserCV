@@ -136,6 +136,17 @@ export default class GameScene extends Phaser.Scene {
     };
     this.door = createSprite(this, doorConfig);
 
+    const doorLabyConfig = {
+      x: 575,
+      y: 310,
+      texture: 'tiles',
+      frame: 1322,
+      width: 30,
+      height: 16,
+      callback: this.enterLaby.bind(this),
+    };
+    this.doorLaby = createSprite(this, doorLabyConfig);
+
     const doorCaveConfig = {
       x: 292,
       y: 312,
@@ -287,6 +298,14 @@ export default class GameScene extends Phaser.Scene {
     return facingStatue;
   }
 
+  enterLaby() {
+    const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
+
+    this.scene.get('scene-game').data.set('playerPosition', playerPosition);
+
+    this.acccueilMusic.stop();
+    this.scene.start('laby-scene');
+  }
   enterHouse() {
     const playerPosition = { x: this.player.sprite.x, y: this.player.sprite.y };
 

@@ -16,6 +16,7 @@ export default class Player {
     this.attacking = false;
     this.attackPower = 10; // Puissance de l'attaque du joueur
     this.health = 100;
+    this.speed = 160;
     this.attackDistance = 40;
     this.attackKey.on('down', () => {
       this.attacking = true;
@@ -67,19 +68,19 @@ export default class Player {
       }
     } else {
       if (cursors.left.isDown) {
-        this.sprite.body.setVelocityX(-160);
+        this.sprite.body.setVelocityX(-this.speed);
         this.sprite.anims.play('left', true);
         this.direction = 'left';
       } else if (cursors.right.isDown) {
-        this.sprite.body.setVelocityX(160);
+        this.sprite.body.setVelocityX(this.speed);
         this.sprite.anims.play('right', true);
         this.direction = 'right';
       } else if (cursors.up.isDown) {
-        this.sprite.body.setVelocityY(-160);
+        this.sprite.body.setVelocityY(-this.speed);
         this.sprite.anims.play('up', true);
         this.direction = 'up';
       } else if (cursors.down.isDown) {
-        this.sprite.body.setVelocityY(160);
+        this.sprite.body.setVelocityY(this.speed);
         this.sprite.anims.play('down', true);
         this.direction = 'down';
       } else {
@@ -95,6 +96,13 @@ export default class Player {
     }
   }
 
+  setSize(width, height) {
+    this.sprite.body.setSize(width, height);
+  }
+
+  setSpeed(speed) {
+    this.speed = speed;
+  }
   setHealth(value) {
     if (value > 100) {
       this.health = 100;
