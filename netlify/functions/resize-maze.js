@@ -129,6 +129,7 @@ exports.handler = async (event, context) => {
 
         replaceHeightWidth(tmjData, cote);
         console.log(finalString);
+
         // Sauvegarder les modifications dans le fichier tmj
         fs.writeFile(
           'public/assets/map/laby.tmj',
@@ -143,10 +144,9 @@ exports.handler = async (event, context) => {
             console.log(finalString.slice(0, -1));
           }
         );
-        return finalString;
       });
-
-      return finalString;
+      const currentDirectory = path.resolve(__dirname);
+      return currentDirectory;
     }
 
     function generate_maze(height, width) {
