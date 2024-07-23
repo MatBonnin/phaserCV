@@ -17,7 +17,7 @@ const config = {
     default: 'arcade',
     arcade: {
       gravity: { y: 0 },
-      debug: true,
+      debug: false,
     },
   },
   scene: [GameScene, LabyScene, HouseScene, CaveScene, Level1Scene, rickScene],

@@ -305,7 +305,7 @@ export default class GameScene extends Phaser.Scene {
         })
           .then((response) => response.json())
           .then((data) => {
-            console.log(data.message);
+            console.log(data);
             modal.style.display = 'none';
           })
           .catch((error) => {

@@ -128,7 +128,7 @@ exports.handler = async (event, context) => {
         }
 
         replaceHeightWidth(tmjData, cote);
-
+        console.log(finalString);
         // Sauvegarder les modifications dans le fichier tmj
         fs.writeFile(
           'public/assets/map/laby.tmj',
@@ -139,10 +139,14 @@ exports.handler = async (event, context) => {
               console.error(err);
               return;
             }
+
             console.log(finalString.slice(0, -1));
           }
         );
+        return finalString;
       });
+
+      return finalString;
     }
 
     function generate_maze(height, width) {
@@ -389,11 +393,14 @@ exports.handler = async (event, context) => {
       return mazeRepresentation.replace(/ /g, '');
     }
 
-    resizeMaze(body.size);
+    const json = resizeMaze(body.size);
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Fichier mis à jour avec succès' }),
+      body: JSON.stringify({
+        message: 'Fichier mis à jour avec succès',
+        json: json,
+      }),
     };
   } catch (error) {
     console.error(error);
