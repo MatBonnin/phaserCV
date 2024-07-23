@@ -92,8 +92,11 @@ exports.handler = async (event, context) => {
       for (const row of transformedLabyrinth) {
         finalString += row.join(',') + ',';
       }
-
-      fs.readFile('public/assets/map/laby.tmj', 'utf8', (err, data) => {
+      const filePath = path.join(
+        __dirname,
+        '../../../public/assets/map/laby.tmj'
+      );
+      fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           console.error(err);
           return;
@@ -132,7 +135,7 @@ exports.handler = async (event, context) => {
 
         // Sauvegarder les modifications dans le fichier tmj
         fs.writeFile(
-          'public/assets/map/laby.tmj',
+          filePath,
           JSON.stringify(tmjData, null, 4),
           'utf8',
           (err) => {
