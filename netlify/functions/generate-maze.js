@@ -5,9 +5,9 @@ exports.handler = async (event, context) => {
   const size = event.queryStringParameters.size;
 
   return new Promise((resolve, reject) => {
-    const scriptPath = path.resolve(__dirname, 'convertwctonumber.py');
+    const scriptPath = 'netlify/functions/python/generateMaze.py';
 
-    exec(`python3 ${scriptPath} ${size}`, (error, stdout, stderr) => {
+    exec(`python ${scriptPath} ${size}`, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         reject({
