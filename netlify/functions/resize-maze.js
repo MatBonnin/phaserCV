@@ -92,17 +92,14 @@ exports.handler = async (event, context) => {
       for (const row of transformedLabyrinth) {
         finalString += row.join(',') + ',';
       }
-      const filePath = path.join(
-        __dirname,
-        '../../../public/assets/map/laby.tmj'
-      );
+      const filePath = 'public/assets/map/laby.tmj';
+
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           console.error(err);
-          return;
+          return err;
         }
         let tmjData = JSON.parse(data);
-
         // Insérer finalString dans le tableau data correspondant dans layers
         tmjData.layers.forEach((layer) => {
           if (layer.name === 'mur') {
@@ -141,7 +138,7 @@ exports.handler = async (event, context) => {
           (err) => {
             if (err) {
               console.error(err);
-              return;
+              return err;
             }
 
             console.log(finalString.slice(0, -1));
