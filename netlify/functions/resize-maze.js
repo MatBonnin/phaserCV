@@ -1,11 +1,11 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 
 exports.handler = async (event, context) => {
   try {
     const body = JSON.parse(event.body);
 
-    function resizeMaze(size) {
+    async function resizeMaze(size) {
       function transformLabyrinth(inputString, rows, cols) {
         // Transformer la chaîne de caractères en une liste de listes
         let labyrinth = [];
@@ -34,8 +34,6 @@ exports.handler = async (event, context) => {
               const bottom = i < height - 1 && labyrinth[i + 1][j] === 'c';
               const left = j > 0 && labyrinth[i][j - 1] === 'c';
               const right = j < width - 1 && labyrinth[i][j + 1] === 'c';
-              const isTopEdge = i === 0; // Vérifie si on est au bord supérieur
-              const isLeftEdge = j === 0;
 
               // Attribuer les bons numéros aux 'w' selon les règles
               if (left && bottom && top && right) {
@@ -92,15 +90,12 @@ exports.handler = async (event, context) => {
       for (const row of transformedLabyrinth) {
         finalString += row.join(',') + ',';
       }
-      const filePath = 'public/assets/map/laby.tmj';
+      const filePath = path.resolve('public/assets/map/laby.tmj');
 
-      fs.readFile(filePath, 'utf8', (err, data) => {
-        if (err) {
-          console.error(err);
-          return err;
-        }
-        return data;
-        let tmjData = JSON.parse(data);
+      try {
+        let read = await fs.readFile(filePath, 'utf8');
+
+        let tmjData = JSON.parse(read);
         // Insérer finalString dans le tableau data correspondant dans layers
         tmjData.layers.forEach((layer) => {
           if (layer.name === 'mur') {
@@ -129,282 +124,29 @@ exports.handler = async (event, context) => {
         }
 
         replaceHeightWidth(tmjData, cote);
-        console.log(finalString);
 
         // Sauvegarder les modifications dans le fichier tmj
-        fs.writeFile(
-          filePath,
-          JSON.stringify(tmjData, null, 4),
-          'utf8',
-          (err) => {
-            if (err) {
-              console.error(err);
-              return err;
-            }
+        await fs.writeFile(filePath, JSON.stringify(tmjData, null, 4), 'utf8');
+        console.log(finalString.slice(0, -1));
 
-            console.log(finalString.slice(0, -1));
-          }
-        );
-      });
-      const currentDirectory = path.resolve(__dirname);
-      return currentDirectory;
+        return read; // Retourne le contenu lu initialement
+      } catch (err) {
+        console.error(err);
+        throw err;
+      }
     }
 
-    function generate_maze(height, width) {
-      // Functions
-      function printMaze(maze) {
-        let mazeString = '';
-        for (let i = 0; i < height; i++) {
-          for (let j = 0; j < width; j++) {
-            mazeString += maze[i][j] + ' ';
-          }
-        }
-        return mazeString;
-      }
-
-      // Find number of surrounding cells
-      function surroundingCells(randWall) {
-        let sCells = 0;
-        if (maze[randWall[0] - 1][randWall[1]] === 'c') sCells += 1;
-        if (maze[randWall[0] + 1][randWall[1]] === 'c') sCells += 1;
-        if (maze[randWall[0]][randWall[1] - 1] === 'c') sCells += 1;
-        if (maze[randWall[0]][randWall[1] + 1] === 'c') sCells += 1;
-        return sCells;
-      }
-
-      // Main code
-      const wall = 'w';
-      const cell = 'c';
-      const unvisited = 'u';
-      let maze = [];
-
-      // Denote all cells as unvisited
-      for (let i = 0; i < height; i++) {
-        let line = [];
-        for (let j = 0; j < width; j++) {
-          line.push(unvisited);
-        }
-        maze.push(line);
-      }
-
-      // Randomize starting point and set it a cell
-      let startingHeight = Math.floor(Math.random() * height);
-      let startingWidth = Math.floor(Math.random() * width);
-      if (startingHeight === 0) startingHeight += 1;
-      if (startingHeight === height - 1) startingHeight -= 1;
-      if (startingWidth === 0) startingWidth += 1;
-      if (startingWidth === width - 1) startingWidth -= 1;
-
-      // Mark it as cell and add surrounding walls to the list
-      maze[startingHeight][startingWidth] = cell;
-      let walls = [
-        [startingHeight - 1, startingWidth],
-        [startingHeight, startingWidth - 1],
-        [startingHeight, startingWidth + 1],
-        [startingHeight + 1, startingWidth],
-      ];
-
-      // Denote walls in maze
-      maze[startingHeight - 1][startingWidth] = 'w';
-      maze[startingHeight][startingWidth - 1] = 'w';
-      maze[startingHeight][startingWidth + 1] = 'w';
-      maze[startingHeight + 1][startingWidth] = 'w';
-
-      while (walls.length) {
-        // Pick a random wall
-        let randWall = walls[Math.floor(Math.random() * walls.length)];
-
-        // Check if it is a left wall
-        if (randWall[1] !== 0) {
-          if (
-            maze[randWall[0]][randWall[1] - 1] === 'u' &&
-            maze[randWall[0]][randWall[1] + 1] === 'c'
-          ) {
-            let sCells = surroundingCells(randWall);
-            if (sCells < 2) {
-              maze[randWall[0]][randWall[1]] = 'c';
-
-              if (randWall[0] !== 0) {
-                if (maze[randWall[0] - 1][randWall[1]] !== 'c')
-                  maze[randWall[0] - 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] - 1, randWall[1]]))
-                  walls.push([randWall[0] - 1, randWall[1]]);
-              }
-              if (randWall[0] !== height - 1) {
-                if (maze[randWall[0] + 1][randWall[1]] !== 'c')
-                  maze[randWall[0] + 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] + 1, randWall[1]]))
-                  walls.push([randWall[0] + 1, randWall[1]]);
-              }
-              if (randWall[1] !== 0) {
-                if (maze[randWall[0]][randWall[1] - 1] !== 'c')
-                  maze[randWall[0]][randWall[1] - 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] - 1]))
-                  walls.push([randWall[0], randWall[1] - 1]);
-              }
-
-              walls = walls.filter(
-                (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
-              );
-              continue;
-            }
-          }
-        }
-
-        // Check if it is an upper wall
-        if (randWall[0] !== 0) {
-          if (
-            maze[randWall[0] - 1][randWall[1]] === 'u' &&
-            maze[randWall[0] + 1][randWall[1]] === 'c'
-          ) {
-            let sCells = surroundingCells(randWall);
-            if (sCells < 2) {
-              maze[randWall[0]][randWall[1]] = 'c';
-
-              if (randWall[0] !== 0) {
-                if (maze[randWall[0] - 1][randWall[1]] !== 'c')
-                  maze[randWall[0] - 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] - 1, randWall[1]]))
-                  walls.push([randWall[0] - 1, randWall[1]]);
-              }
-              if (randWall[1] !== 0) {
-                if (maze[randWall[0]][randWall[1] - 1] !== 'c')
-                  maze[randWall[0]][randWall[1] - 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] - 1]))
-                  walls.push([randWall[0], randWall[1] - 1]);
-              }
-              if (randWall[1] !== width - 1) {
-                if (maze[randWall[0]][randWall[1] + 1] !== 'c')
-                  maze[randWall[0]][randWall[1] + 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] + 1]))
-                  walls.push([randWall[0], randWall[1] + 1]);
-              }
-
-              walls = walls.filter(
-                (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
-              );
-              continue;
-            }
-          }
-        }
-
-        // Check the bottom wall
-        if (randWall[0] !== height - 1) {
-          if (
-            maze[randWall[0] + 1][randWall[1]] === 'u' &&
-            maze[randWall[0] - 1][randWall[1]] === 'c'
-          ) {
-            let sCells = surroundingCells(randWall);
-            if (sCells < 2) {
-              maze[randWall[0]][randWall[1]] = 'c';
-
-              if (randWall[0] !== height - 1) {
-                if (maze[randWall[0] + 1][randWall[1]] !== 'c')
-                  maze[randWall[0] + 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] + 1, randWall[1]]))
-                  walls.push([randWall[0] + 1, randWall[1]]);
-              }
-              if (randWall[1] !== 0) {
-                if (maze[randWall[0]][randWall[1] - 1] !== 'c')
-                  maze[randWall[0]][randWall[1] - 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] - 1]))
-                  walls.push([randWall[0], randWall[1] - 1]);
-              }
-              if (randWall[1] !== width - 1) {
-                if (maze[randWall[0]][randWall[1] + 1] !== 'c')
-                  maze[randWall[0]][randWall[1] + 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] + 1]))
-                  walls.push([randWall[0], randWall[1] + 1]);
-              }
-
-              walls = walls.filter(
-                (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
-              );
-              continue;
-            }
-          }
-        }
-
-        // Check the right wall
-        if (randWall[1] !== width - 1) {
-          if (
-            maze[randWall[0]][randWall[1] + 1] === 'u' &&
-            maze[randWall[0]][randWall[1] - 1] === 'c'
-          ) {
-            let sCells = surroundingCells(randWall);
-            if (sCells < 2) {
-              maze[randWall[0]][randWall[1]] = 'c';
-
-              if (randWall[1] !== width - 1) {
-                if (maze[randWall[0]][randWall[1] + 1] !== 'c')
-                  maze[randWall[0]][randWall[1] + 1] = 'w';
-                if (!walls.includes([randWall[0], randWall[1] + 1]))
-                  walls.push([randWall[0], randWall[1] + 1]);
-              }
-              if (randWall[0] !== height - 1) {
-                if (maze[randWall[0] + 1][randWall[1]] !== 'c')
-                  maze[randWall[0] + 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] + 1, randWall[1]]))
-                  walls.push([randWall[0] + 1, randWall[1]]);
-              }
-              if (randWall[0] !== 0) {
-                if (maze[randWall[0] - 1][randWall[1]] !== 'c')
-                  maze[randWall[0] - 1][randWall[1]] = 'w';
-                if (!walls.includes([randWall[0] - 1, randWall[1]]))
-                  walls.push([randWall[0] - 1, randWall[1]]);
-              }
-
-              walls = walls.filter(
-                (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
-              );
-              continue;
-            }
-          }
-        }
-
-        // Delete the wall from the list anyway
-        walls = walls.filter(
-          (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
-        );
-      }
-
-      // Mark the remaining unvisited cells as walls
-      for (let i = 0; i < height; i++) {
-        for (let j = 0; j < width; j++) {
-          if (maze[i][j] === 'u') maze[i][j] = 'w';
-        }
-      }
-
-      // Set entrance and exit
-      for (let i = 0; i < width; i++) {
-        if (maze[1][i] === 'c') {
-          maze[0][i] = 'c';
-          break;
-        }
-      }
-
-      for (let i = width - 1; i > 0; i--) {
-        if (maze[height - 2][i] === 'c') {
-          maze[height - 1][i] = 'c';
-          break;
-        }
-      }
-
-      let mazeRepresentation = printMaze(maze);
-      return mazeRepresentation.replace(/ /g, '');
-    }
-
-    const json = resizeMaze(body.size);
-
+    // Appel de la fonction resizeMaze et gestion de la réponse
+    const read = await resizeMaze(body.size);
     return {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Fichier mis à jour avec succès',
-        json: json,
+        json: read,
       }),
     };
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error("Erreur lors de l'opération:", err);
     return {
       statusCode: 500,
       body: JSON.stringify({
@@ -413,3 +155,247 @@ exports.handler = async (event, context) => {
     };
   }
 };
+
+function generate_maze(height, width) {
+  // Functions
+  function printMaze(maze) {
+    let mazeString = '';
+    for (let i = 0; i < height; i++) {
+      for (let j = 0; j < width; j++) {
+        mazeString += maze[i][j] + ' ';
+      }
+    }
+    return mazeString;
+  }
+
+  // Find number of surrounding cells
+  function surroundingCells(randWall) {
+    let sCells = 0;
+    if (maze[randWall[0] - 1][randWall[1]] === 'c') sCells += 1;
+    if (maze[randWall[0] + 1][randWall[1]] === 'c') sCells += 1;
+    if (maze[randWall[0]][randWall[1] - 1] === 'c') sCells += 1;
+    if (maze[randWall[0]][randWall[1] + 1] === 'c') sCells += 1;
+    return sCells;
+  }
+
+  // Main code
+  const wall = 'w';
+  const cell = 'c';
+  const unvisited = 'u';
+  let maze = [];
+
+  // Denote all cells as unvisited
+  for (let i = 0; i < height; i++) {
+    let line = [];
+    for (let j = 0; j < width; j++) {
+      line.push(unvisited);
+    }
+    maze.push(line);
+  }
+
+  // Randomize starting point and set it a cell
+  let startingHeight = Math.floor(Math.random() * height);
+  let startingWidth = Math.floor(Math.random() * width);
+  if (startingHeight === 0) startingHeight += 1;
+  if (startingHeight === height - 1) startingHeight -= 1;
+  if (startingWidth === 0) startingWidth += 1;
+  if (startingWidth === width - 1) startingWidth -= 1;
+
+  // Mark it as cell and add surrounding walls to the list
+  maze[startingHeight][startingWidth] = cell;
+  let walls = [
+    [startingHeight - 1, startingWidth],
+    [startingHeight, startingWidth - 1],
+    [startingHeight, startingWidth + 1],
+    [startingHeight + 1, startingWidth],
+  ];
+
+  // Denote walls in maze
+  maze[startingHeight - 1][startingWidth] = 'w';
+  maze[startingHeight][startingWidth - 1] = 'w';
+  maze[startingHeight][startingWidth + 1] = 'w';
+  maze[startingHeight + 1][startingWidth] = 'w';
+
+  while (walls.length) {
+    // Pick a random wall
+    let randWall = walls[Math.floor(Math.random() * walls.length)];
+
+    // Check if it is a left wall
+    if (randWall[1] !== 0) {
+      if (
+        maze[randWall[0]][randWall[1] - 1] === 'u' &&
+        maze[randWall[0]][randWall[1] + 1] === 'c'
+      ) {
+        let sCells = surroundingCells(randWall);
+        if (sCells < 2) {
+          maze[randWall[0]][randWall[1]] = 'c';
+
+          if (randWall[0] !== 0) {
+            if (maze[randWall[0] - 1][randWall[1]] !== 'c')
+              maze[randWall[0] - 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] - 1, randWall[1]]))
+              walls.push([randWall[0] - 1, randWall[1]]);
+          }
+          if (randWall[0] !== height - 1) {
+            if (maze[randWall[0] + 1][randWall[1]] !== 'c')
+              maze[randWall[0] + 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] + 1, randWall[1]]))
+              walls.push([randWall[0] + 1, randWall[1]]);
+          }
+          if (randWall[1] !== 0) {
+            if (maze[randWall[0]][randWall[1] - 1] !== 'c')
+              maze[randWall[0]][randWall[1] - 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] - 1]))
+              walls.push([randWall[0], randWall[1] - 1]);
+          }
+
+          walls = walls.filter(
+            (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
+          );
+          continue;
+        }
+      }
+    }
+
+    // Check if it is an upper wall
+    if (randWall[0] !== 0) {
+      if (
+        maze[randWall[0] - 1][randWall[1]] === 'u' &&
+        maze[randWall[0] + 1][randWall[1]] === 'c'
+      ) {
+        let sCells = surroundingCells(randWall);
+        if (sCells < 2) {
+          maze[randWall[0]][randWall[1]] = 'c';
+
+          if (randWall[0] !== 0) {
+            if (maze[randWall[0] - 1][randWall[1]] !== 'c')
+              maze[randWall[0] - 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] - 1, randWall[1]]))
+              walls.push([randWall[0] - 1, randWall[1]]);
+          }
+          if (randWall[1] !== 0) {
+            if (maze[randWall[0]][randWall[1] - 1] !== 'c')
+              maze[randWall[0]][randWall[1] - 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] - 1]))
+              walls.push([randWall[0], randWall[1] - 1]);
+          }
+          if (randWall[1] !== width - 1) {
+            if (maze[randWall[0]][randWall[1] + 1] !== 'c')
+              maze[randWall[0]][randWall[1] + 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] + 1]))
+              walls.push([randWall[0], randWall[1] + 1]);
+          }
+
+          walls = walls.filter(
+            (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
+          );
+          continue;
+        }
+      }
+    }
+
+    // Check the bottom wall
+    if (randWall[0] !== height - 1) {
+      if (
+        maze[randWall[0] + 1][randWall[1]] === 'u' &&
+        maze[randWall[0] - 1][randWall[1]] === 'c'
+      ) {
+        let sCells = surroundingCells(randWall);
+        if (sCells < 2) {
+          maze[randWall[0]][randWall[1]] = 'c';
+
+          if (randWall[0] !== height - 1) {
+            if (maze[randWall[0] + 1][randWall[1]] !== 'c')
+              maze[randWall[0] + 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] + 1, randWall[1]]))
+              walls.push([randWall[0] + 1, randWall[1]]);
+          }
+          if (randWall[1] !== 0) {
+            if (maze[randWall[0]][randWall[1] - 1] !== 'c')
+              maze[randWall[0]][randWall[1] - 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] - 1]))
+              walls.push([randWall[0], randWall[1] - 1]);
+          }
+          if (randWall[1] !== width - 1) {
+            if (maze[randWall[0]][randWall[1] + 1] !== 'c')
+              maze[randWall[0]][randWall[1] + 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] + 1]))
+              walls.push([randWall[0], randWall[1] + 1]);
+          }
+
+          walls = walls.filter(
+            (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
+          );
+          continue;
+        }
+      }
+    }
+
+    // Check the right wall
+    if (randWall[1] !== width - 1) {
+      if (
+        maze[randWall[0]][randWall[1] + 1] === 'u' &&
+        maze[randWall[0]][randWall[1] - 1] === 'c'
+      ) {
+        let sCells = surroundingCells(randWall);
+        if (sCells < 2) {
+          maze[randWall[0]][randWall[1]] = 'c';
+
+          if (randWall[1] !== width - 1) {
+            if (maze[randWall[0]][randWall[1] + 1] !== 'c')
+              maze[randWall[0]][randWall[1] + 1] = 'w';
+            if (!walls.includes([randWall[0], randWall[1] + 1]))
+              walls.push([randWall[0], randWall[1] + 1]);
+          }
+          if (randWall[0] !== height - 1) {
+            if (maze[randWall[0] + 1][randWall[1]] !== 'c')
+              maze[randWall[0] + 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] + 1, randWall[1]]))
+              walls.push([randWall[0] + 1, randWall[1]]);
+          }
+          if (randWall[0] !== 0) {
+            if (maze[randWall[0] - 1][randWall[1]] !== 'c')
+              maze[randWall[0] - 1][randWall[1]] = 'w';
+            if (!walls.includes([randWall[0] - 1, randWall[1]]))
+              walls.push([randWall[0] - 1, randWall[1]]);
+          }
+
+          walls = walls.filter(
+            (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
+          );
+          continue;
+        }
+      }
+    }
+
+    // Delete the wall from the list anyway
+    walls = walls.filter(
+      (wall) => !(wall[0] === randWall[0] && wall[1] === randWall[1])
+    );
+  }
+
+  // Mark the remaining unvisited cells as walls
+  for (let i = 0; i < height; i++) {
+    for (let j = 0; j < width; j++) {
+      if (maze[i][j] === 'u') maze[i][j] = 'w';
+    }
+  }
+
+  // Set entrance and exit
+  for (let i = 0; i < width; i++) {
+    if (maze[1][i] === 'c') {
+      maze[0][i] = 'c';
+      break;
+    }
+  }
+
+  for (let i = width - 1; i > 0; i--) {
+    if (maze[height - 2][i] === 'c') {
+      maze[height - 1][i] = 'c';
+      break;
+    }
+  }
+
+  let mazeRepresentation = printMaze(maze);
+  return mazeRepresentation.replace(/ /g, '');
+}
