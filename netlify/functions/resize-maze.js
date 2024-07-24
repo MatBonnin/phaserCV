@@ -92,7 +92,7 @@ exports.handler = async (event, context) => {
       }
       const filePath = path.join(
         process.cwd(),
-        'public/assets/map',
+        '../../public/assets/map',
         'laby.tmj'
       );
 
