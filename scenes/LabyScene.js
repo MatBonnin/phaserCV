@@ -28,7 +28,7 @@ export default class LabyScene extends Phaser.Scene {
   }
 
   loadResources() {
-    this.load.tilemapTiledJSON('labyMap', '/assets/map/laby.tmj');
+    this.load.tilemapTiledJSON('labyMap', '../netlify/functions/laby.tmj');
     this.load.spritesheet('tiles', 'assets/spritesheet/tileset.png', {
       frameWidth: 16,
       frameHeight: 16,

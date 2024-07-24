@@ -90,10 +90,7 @@ exports.handler = async (event, context) => {
       for (const row of transformedLabyrinth) {
         finalString += row.join(',') + ',';
       }
-      const filePath = path.join(
-        __dirname,
-        '../../../public/assets/map/laby.tmj'
-      );
+      const filePath = 'laby.tmj';
 
       try {
         let read = await fs.readFile(filePath, 'utf8');
