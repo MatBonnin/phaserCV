@@ -99,6 +99,7 @@ exports.handler = async (event, context) => {
           console.error(err);
           return err;
         }
+        return data;
         let tmjData = JSON.parse(data);
         // Insérer finalString dans le tableau data correspondant dans layers
         tmjData.layers.forEach((layer) => {
