@@ -138,35 +138,13 @@ exports.handler = async (event, context) => {
       }
     }
 
-    function findFile(fileName, dir) {
-      const files = fs.readdirSync(dir);
-
-      for (const file of files) {
-        const filePath = path.join(dir, file);
-        const stat = fs.statSync(filePath);
-
-        if (stat.isDirectory()) {
-          const result = findFile(fileName, filePath);
-          if (result) {
-            return result;
-          }
-        } else if (file === fileName) {
-          return filePath;
-        }
-      }
-      return null;
-    }
-
-    const fileName = 'laby.tmj'; // Remplace par le nom du fichier que tu cherches
-    const dir = '../../'; // Remplace par le chemin du répertoire de départ
-    const filePath = findFile(fileName, dir);
     // Appel de la fonction resizeMaze et gestion de la réponse
     const read = await resizeMaze(body.size);
     return {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Fichier mis à jour avec succès',
-        json: filePath,
+        json: read,
       }),
     };
   } catch (err) {
@@ -175,7 +153,7 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({
         message: 'Erreur lors de la mise à jour du fichier',
-        err: filePath,
+        err: err,
       }),
     };
   }
