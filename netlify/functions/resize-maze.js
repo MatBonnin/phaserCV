@@ -90,7 +90,7 @@ exports.handler = async (event, context) => {
       for (const row of transformedLabyrinth) {
         finalString += row.join(',') + ',';
       }
-      const filePath = 'laby.tmj';
+      const filePath = process.cwd() - '/laby.tmj';
 
       console.log('Current working directory:', process.cwd());
       console.log('Resolved filePath:', filePath);
