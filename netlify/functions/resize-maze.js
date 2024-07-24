@@ -151,6 +151,7 @@ exports.handler = async (event, context) => {
       statusCode: 500,
       body: JSON.stringify({
         message: 'Erreur lors de la mise à jour du fichier',
+        err: err,
       }),
     };
   }
